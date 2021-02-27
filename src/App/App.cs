@@ -20,6 +20,11 @@ namespace GDRPC.App
         private static System.Diagnostics.Process _gp;
         public static System.Diagnostics.Process GameProcess { get => _gp; }
 
+        //game manager
+        private static Memory.MemoryReader _gm;
+        public static Memory.MemoryReader GameManager { get => _gm; }
+
+
         //default gdrpc
         public static Discord.RichPresence defaultRpc = new Discord.RichPresence
         {
@@ -55,12 +60,15 @@ namespace GDRPC.App
                 _im = new WinApi.IniManager(conf);
             }
 
+            bool isInited = false;
+
             //запусk gdrpc
             while (true)
             {
                 //если упал процесс или его вообще нет то го процесс делать
                 if (_gp == null || _gp.HasExited)
                 {
+                    isInited = false;
                     //дискорд был унитилизирован?
                     if (Config.IsKey("p", "_disinit"))
                     {
@@ -71,9 +79,15 @@ namespace GDRPC.App
                 }
 
                 //дискорд унитилизирован.
-                Discord.Discord.Initialize(Config.Read("g", "appID"));
-                Discord.Discord.SetPresence(defaultRpc);
-                Config.Write("p", "_disinit", "+");
+                if (!isInited)
+                {
+                    Discord.Discord.Initialize(Config.Read("g", "appID"));
+                    Discord.Discord.SetPresence(defaultRpc);
+                    Config.Write("p", "_disinit", "+"); 
+                    isInited = true;
+                }
+
+
                 await Task.Delay(1500);
             }
         }
@@ -89,6 +103,7 @@ namespace GDRPC.App
             _tm = "";
             _im = null;
             _gp = null;
+            _gm = null;
         }
 
         //privates
@@ -96,6 +111,7 @@ namespace GDRPC.App
         {
             Console.WriteLine("GP find");
             _gp = await ProcessFinder.FindProcess(_im.Read("g", "processName"));
+            _gm = new Memory.MemoryReader(_gp);
             Console.WriteLine("Debug PID: " + _gp.Id);
         }
     }
