@@ -30,12 +30,12 @@ namespace GDRPC.App
         {
             Assets = new Discord.Assets
             {
-                LargeImageText = "test",
-                LargeImageKey = "slogo",
+                LargeImageText = "Geometry Jump",
+                LargeImageKey = "logo",
             },
             Timestamps = new Discord.Timestamps
             {
-                Start = DateTime.UtcNow
+                Start = AppRunner.StartApp
             }
         };
 
@@ -78,16 +78,24 @@ namespace GDRPC.App
                     Discord.Discord.Initialize(Config.Read("g", "appID"));
                     Discord.Discord.SetPresence(defaultRpc);
                     Config.Write("p", "_disinit", "+");
+#if DEBUG
+                    Console.WriteLine("Debug mode unlimited delay");
+                    await Task.Delay(1000);
+#else
                     await Task.Delay(5000);
+#endif
                     continue;
                 }
-
                 if (GM.Reader.Level.IsOpened)
-                    Console.WriteLine("Level");
+                    await AppLevel.Run();
                 else if (GM.Reader.Editor.IsOpened)
                     Console.WriteLine("Creator: " + GM.Reader.Editor.BlockCount);
                 else
-                    Console.WriteLine("Menu");
+                {
+                    Discord.RichPresence rpc = App.defaultRpc;
+                    rpc.Details = "In menu";
+                    Discord.Discord.SetPresence(rpc);
+                }    
 
                 await Task.Delay(1500);
             }
