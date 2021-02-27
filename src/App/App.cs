@@ -82,9 +82,14 @@ namespace GDRPC.App
                     continue;
                 }
 
-                await Task.Delay(1500);
+                if (GM.Reader.Level.IsOpened)
+                    Console.WriteLine("Level");
+                else if (GM.Reader.Editor.IsOpened)
+                    Console.WriteLine("Creator: " + GM.Reader.Editor.BlockCount);
+                else
+                    Console.WriteLine("Menu");
 
-                Console.WriteLine(GM.Reader.SceneID);
+                await Task.Delay(1500);
             }
         }
 
