@@ -20,5 +20,9 @@ namespace GDRPC.Memory
         {
             return p.Read<T>(p.GetModule(p.Game.ProcessName), offsets);
         }
+        public T Read<T>(long address) where T : struct
+        {
+            return p.Read<T>(address);
+        }
     }
 }
