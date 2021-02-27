@@ -78,6 +78,7 @@ namespace GDRPC.App
                     Discord.Discord.Initialize(Config.Read("g", "appID"));
                     Discord.Discord.SetPresence(defaultRpc);
                     Config.Write("p", "_disinit", "+");
+                    await Task.Delay(5000);
                     continue;
                 }
 
