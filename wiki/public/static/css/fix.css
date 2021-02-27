@@ -1,0 +1,22 @@
+.fa,
+.fas {
+    color: black;
+    -webkit-text-fill-color: transparent;
+    -webkit-text-stroke-width: 1.5px;
+    -webkit-text-stroke-color: black;
+}
+.center{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-right: -50%;
+    transform: translate(-50%, -50%);
+}
+#loader{
+    overflow: hidden;
+    position: fixed;
+    color: white;
+}
+.menu-dropdown-index-fix{
+    z-index: 999;
+}

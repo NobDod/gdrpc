@@ -1,0 +1,12 @@
+{
+  "name": "gdrpc-wiki-server",
+  "version": "1.0.0",
+  "description": "github.com/hopixteam/gdrpc",
+  "main": "server/server.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "nodemon -e js server/server.js"
+  },
+  "author": "Hopix Team",
+  "license": "MIT"
+}
