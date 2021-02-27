@@ -10,15 +10,17 @@ namespace GDRPC.Memory
     class MemoryReader
     {
         private MemoryReaderPrivate p;
-        public MemoryReader(Process process)
+        private string pn;
+        public MemoryReader(string processName, Process process)
         {
+            pn = processName;
             p = new MemoryReaderPrivate();
             p.Initialize(process, AppAccess.PROCESS_VM_READ | AppAccess.PROCESS_VM_WRITE | AppAccess.PROCESS_VM_OPERATION, process.ProcessName);
         }
 
         public T Read<T>(int[] offsets) where T : struct
         {
-            return p.Read<T>(p.GetModule(p.Game.ProcessName), offsets);
+            return p.Read<T>(p.GetModule(pn), offsets);
         }
         public T Read<T>(long address) where T : struct
         {

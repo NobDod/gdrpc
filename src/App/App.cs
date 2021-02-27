@@ -64,7 +64,7 @@ namespace GDRPC.App
             while (true)
             {
                 //если упал процесс или его вообще нет то го процесс делать
-                if (_gp == null || _gp.HasExited)
+                if (_gp == null || _gm == null || _gp.HasExited)
                 {
                     //дискорд был унитилизирован?
                     if (Config.IsKey("p", "_disinit"))
@@ -78,11 +78,12 @@ namespace GDRPC.App
                     Discord.Discord.Initialize(Config.Read("g", "appID"));
                     Discord.Discord.SetPresence(defaultRpc);
                     Config.Write("p", "_disinit", "+");
+                    continue;
                 }
 
                 await Task.Delay(1500);
 
-
+                Console.WriteLine(GM.Reader.SceneID());
             }
         }
 
@@ -105,7 +106,7 @@ namespace GDRPC.App
         {
             Console.WriteLine("GP find");
             _gp = await ProcessFinder.FindProcess(_im.Read("g", "processName"));
-            _gm = new Memory.MemoryReader(_gp);
+            _gm = new Memory.MemoryReader(_im.Read("g", "processName") + _im.Read("g", "ext"), _gp);
             Console.WriteLine("Debug PID: " + _gp.Id);
         }
     }
