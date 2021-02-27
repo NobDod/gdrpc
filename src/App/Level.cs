@@ -48,10 +48,10 @@ namespace GDRPC.App
 #endif
                 Discord.RichPresence rpc = App.defaultRpc;
                 rpc.Details = "Playing a level";
-                rpc.State = "Percent: " + procent + ", attempts: " + attempts;
+                rpc.State = "Percent: " + procent + "%, attempts: " + attempts;
                 rpc.Timestamps.Start = t;
                 rpc.Assets.SmallImageKey = iconSet;
-                rpc.Assets.SmallImageText = "Stars: " + stars;
+                rpc.Assets.SmallImageText = "Stars: " + stars + ", best percent: " +totalProcent + "%";
                 Discord.Discord.SetPresence(rpc);
                 await Task.Delay(1000);
             }
