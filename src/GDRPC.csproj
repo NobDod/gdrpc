@@ -49,7 +49,12 @@
   <ItemGroup>
     <Compile Include="App.cs" />
     <Compile Include="App\App.cs" />
+    <Compile Include="App\GM\Converter.cs" />
+    <Compile Include="App\GM\Enums.cs" />
+    <Compile Include="App\GM\Reader.cs" />
     <Compile Include="App\ProcessFinder.cs" />
+    <Compile Include="Memory\private.cs" />
+    <Compile Include="Memory\public.cs" />
     <Compile Include="Resources\Reader.cs" />
     <Compile Include="Utils\RandomText.cs" />
     <Compile Include="WinApi\Discord\Class.cs" />
@@ -58,6 +63,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WinApi\Consoler.cs" />
     <Compile Include="WinApi\IniManager.cs" />
+    <Compile Include="WinApi\Internet.cs" />
     <Compile Include="WinApi\MessageBox.cs" />
   </ItemGroup>
   <ItemGroup>
