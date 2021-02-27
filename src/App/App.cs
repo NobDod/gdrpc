@@ -60,15 +60,12 @@ namespace GDRPC.App
                 _im = new WinApi.IniManager(conf);
             }
 
-            bool isInited = false;
-
             //запусk gdrpc
             while (true)
             {
                 //если упал процесс или его вообще нет то го процесс делать
                 if (_gp == null || _gp.HasExited)
                 {
-                    isInited = false;
                     //дискорд был унитилизирован?
                     if (Config.IsKey("p", "_disinit"))
                     {
@@ -76,19 +73,16 @@ namespace GDRPC.App
                         Config.RemoveKey("p", "_disinit");
                     }
                     await ProcessInitialize();
-                }
 
-                //дискорд унитилизирован.
-                if (!isInited)
-                {
+                    //дискорд унитилизирован.
                     Discord.Discord.Initialize(Config.Read("g", "appID"));
                     Discord.Discord.SetPresence(defaultRpc);
-                    Config.Write("p", "_disinit", "+"); 
-                    isInited = true;
+                    Config.Write("p", "_disinit", "+");
                 }
 
-
                 await Task.Delay(1500);
+
+
             }
         }
 
