@@ -84,7 +84,7 @@ namespace GDRPC.App
 
                 await Task.Delay(1500);
 
-                Console.WriteLine(GM.Reader.SceneID());
+                Console.WriteLine(GM.Reader.SceneID);
             }
         }
 

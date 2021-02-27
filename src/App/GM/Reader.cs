@@ -12,6 +12,6 @@ namespace GDRPC.App.GM
         {
             return App.GameManager.Read<T>(IntPtr.Add(App.GameManager.Read<IntPtr>(offests), mainAddres).ToInt64());
         }
-        public static int SceneID() => Read<int>(0x1DC, new[] { 0x3222D0 });
+        public static int SceneID => Read<int>(0x1DC, new[] { 0x3222D0 });
     }
 }

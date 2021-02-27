@@ -52,7 +52,9 @@ namespace GDRPC
 #endif
                 Console.WriteLine("Geometry Dash Rich Presence");
                 App.App.Run().ConfigureAwait(false);
+#if DEBUG
                 while (true) { Console.ReadKey(true); }
+#endif
             }
             App.App.Run().ConfigureAwait(false);
         }
