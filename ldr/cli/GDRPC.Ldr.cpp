@@ -4,3 +4,6 @@
 extern "C" __declspec(dllexport) void Start() {
 	GDRPC::AppRunner::Run();
 }
+extern "C" __declspec(dllexport) void Stop() {
+	GDRPC::AppRunner::Stop();
+}
