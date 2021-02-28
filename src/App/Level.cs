@@ -40,6 +40,10 @@ namespace GDRPC.App
             {
                 int procent = GM.Reader.Level.Procent, totalProcent = GM.Reader.Level.BestProcent, attempts = GM.Reader.Level.Attempts,
                     stars = GM.Reader.Level.Stars;
+
+                //ожидание загрузки уровня
+                if (procent < 0)
+                    continue;
 #if DEBUG
                 Console.WriteLine("Level: {0}, diff: {1} ({2}), procent: {5} (t:{6}), isAuto: {3}, isDemon: {4}",
                     levelID, Diff.ToString(), iconSet, "-", isDemon.ToString(), procent, totalProcent) ;
@@ -47,7 +51,10 @@ namespace GDRPC.App
                    GM.Reader.Level.Utils.XPOS, GM.Reader.Level.Utils.LenLevel, attempts);
 #endif
                 Discord.RichPresence rpc = App.defaultRpc;
-                rpc.Details = "Playing a level";
+                if(scene == GM.Scenes.OFFICIAL_LEVEL)
+                    rpc.Details = "Playing a official level";
+                else
+                    rpc.Details = "Playing a level";
                 rpc.State = "Percent: " + procent + "%, attempts: " + attempts;
                 rpc.Timestamps.Start = t;
                 rpc.Assets.SmallImageKey = iconSet;
