@@ -30,7 +30,7 @@ namespace GDRPC.App
         {
             Assets = new Discord.Assets
             {
-                LargeImageText = "Geometry Jump",
+                LargeImageText = "Geometry Dash",
                 LargeImageKey = "logo",
             },
             Timestamps = new Discord.Timestamps
