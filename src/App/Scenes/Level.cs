@@ -51,6 +51,7 @@ namespace GDRPC.App
                 Console.WriteLine("X POS: {0}, Len: {1}, Attempts: {2}",
                    GM.Reader.Level.Utils.XPOS, GM.Reader.Level.Utils.LenLevel, attempts);
 #endif
+                bool isOnline = (type == GM.LevelType.SAVED || type == GM.LevelType.ONLINE);
                 Discord.RichPresence rpc = App.defaultRpc;
                 if(type == GM.LevelType.OFFICIAL)
                     rpc.Details = "Playing a official level";
@@ -61,7 +62,7 @@ namespace GDRPC.App
                 rpc.State = "Percent: " + procent + "%, attempts: " + attempts;
                 rpc.Timestamps.Start = t;
                 rpc.Assets.SmallImageKey = iconSet;
-                rpc.Assets.SmallImageText = "Stars: " + stars + ", best percent: " +totalProcent + "%";
+                rpc.Assets.SmallImageText = (isOnline ? "ID: " + levelID + ", s" : "S") + "tars: " + stars + ", best percent: " +totalProcent + "%";
                 Discord.Discord.SetPresence(rpc);
                 await Task.Delay(1000);
             }
