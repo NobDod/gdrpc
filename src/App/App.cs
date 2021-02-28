@@ -113,6 +113,11 @@ namespace GDRPC.App
             string tmPa = System.IO.Path.GetTempPath() + "GDRPC";
             if (System.IO.Directory.Exists(tmPa))
                 System.IO.Directory.Delete(tmPa, true);
+            if (Config.IsKey("p", "_disinit"))
+            {
+                Discord.Discord.Deinitialize();
+                Config.RemoveKey("p", "_disinit");
+            }
             _tm = "";
             _im = null;
             _gp = null;
