@@ -1,4 +1,4 @@
-# Geometry Dash Rich Presence (next - GDRPC)
+# Geometry Dash Rich Presence (next - GDRPC) (BETA)
 GDRPC allow you to show additional information about the game on Discord. For example, what level are you playing. GDRPC is distributed under the MIT licenses. You can use in your launcher, we will find the game automatic. 
 You only call one function.
 
