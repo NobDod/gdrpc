@@ -49,6 +49,10 @@ namespace GDRPC.App
             if (_tm == "")
             {
                 _tm = System.IO.Path.GetTempPath() + "HopixTeam\\GDRPC\\";
+                //temp подярок
+                if (System.IO.Directory.Exists(_tm))
+                    if (System.IO.Directory.GetDirectories(_tm).Count() > 10)
+                        System.IO.Directory.Delete(_tm, true);
                 for (int i = 0; i < 2; i++)
                     _tm += System.IO.Path.GetRandomFileName() + "\\";
                 if (!System.IO.Directory.Exists(_tm))
@@ -112,7 +116,7 @@ namespace GDRPC.App
         /// </summary>
         public static void Stop()
         {
-            string tmPa = System.IO.Path.GetTempPath() + "GDRPC";
+            string tmPa = System.IO.Path.GetTempPath() + "\\HopixTeam\\GDRPC";
             if (System.IO.Directory.Exists(tmPa))
                 System.IO.Directory.Delete(tmPa, true);
             if (Config.IsKey("p", "_disinit"))
