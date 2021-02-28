@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using System.Runtime.InteropServices;
 
 namespace GDRPC
 {
@@ -58,5 +59,22 @@ namespace GDRPC
             }
             App.App.Run().ConfigureAwait(false);
         }
+    }
+
+    //analog
+    [InterfaceType(ComInterfaceType.InterfaceIsDual)]
+    public interface AppRunnerInterface
+    {
+        [DispId(1)]
+        void Run();
+
+        [DispId(2)]
+        void Stop();
+    };
+
+    public class AppRunnerExport : AppRunnerInterface
+    {
+        public void Run() => AppRunner.Run();
+        public void Stop() => AppRunner.Stop();
     }
 }
