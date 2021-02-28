@@ -67,6 +67,8 @@ namespace GDRPC.App
             //запусk gdrpc
             while (true)
             {
+                if (_tm == "")
+                    break;
                 //если упал процесс или его вообще нет то го процесс делать
                 if (_gp == null || _gm == null || _gp.HasExited)
                 {

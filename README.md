@@ -16,6 +16,16 @@ Task.Run(() => GDRPC.AppRunner.Run());
 ```c#
 GDRPC.AppRunner.Run();
 ```
+### Stop GDRPC with Discord (app not automatic exit)
+#### if you start with thread
+```c#
+rpc.Abort();
+GDRPC.AppRunner.Stop();
+```
+#### if you start with task or only function
+```c#
+GDRPC.AppRunner.Stop();
+```
 
 ## Config file (need to compiling GDRPC)
 ### `src/resources/config.ini`
