@@ -35,7 +35,7 @@ namespace GDRPC.App
             },
             Timestamps = new Discord.Timestamps
             {
-                Start = AppRunner.StartApp
+                Start = new DateTime()
             }
         };
 
@@ -121,6 +121,7 @@ namespace GDRPC.App
             Console.WriteLine("GP find");
             _gp = await ProcessFinder.FindProcess(_im.Read("g", "processName"));
             _gm = new Memory.MemoryReader(_im.Read("g", "processName") + _im.Read("g", "ext"), _gp);
+            defaultRpc.Timestamps.Start = DateTime.UtcNow;
             Console.WriteLine("Debug PID: " + _gp.Id);
         }
     }
