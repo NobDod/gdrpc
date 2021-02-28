@@ -12,7 +12,6 @@ rpc.Start();
 ```c#
 Task.Run(() => GDRPC.AppRunner.Run());
 ```
-
 ### Only function
 ```c#
 GDRPC.AppRunner.Run();
