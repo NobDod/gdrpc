@@ -2,7 +2,12 @@
 GDRPC allow you to show additional information about the game on Discord. For example, what level are you playing. GDRPC is distributed under the MIT licenses. You can use in your launcher, we will find the game automatic. 
 You only call one function.
 
-## Example
+## Download for original game
+
+
+## Example (for private servers)
+Recommended: use a LDR service (you just need to compile GDRPC.dll and add the files (download them from release): `libcurl.dll`,` gdrpc_cli.dll`, `gdrpc_ldr.dll` to game)
+
 ### With thread
 ```c#
 Thread rpc = new Thread(GDRPC.AppRunner.Run);
