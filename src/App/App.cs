@@ -48,16 +48,20 @@ namespace GDRPC.App
             //темп папка
             if (_tm == "")
             {
-                _tm = System.IO.Path.GetTempPath() + "GDRPC\\";
+                _tm = System.IO.Path.GetTempPath() + "HopixTeam\\GDRPC\\";
                 for (int i = 0; i < 2; i++)
-                    _tm += Utils.RandomText.Run(16 + i) + "\\";
+                    _tm += System.IO.Path.GetRandomFileName() + "\\";
                 if (!System.IO.Directory.Exists(_tm))
                     System.IO.Directory.CreateDirectory(_tm);
 
                 //достаем конфинг
-                string conf = _tm + Utils.RandomText.Run(32);
+                string conf = _tm + System.IO.Path.GetRandomFileName();
                 System.IO.File.AppendAllText(conf, Resources.Reader.ReadFileFromResource("config.ini"));
                 _im = new WinApi.IniManager(conf);
+
+                //check config
+                if (!_im.IsKey("g", "appID"))
+                    AppRunner.MSG.Error("Fatal error: config extracting error");
             }
 
             //запусk gdrpc

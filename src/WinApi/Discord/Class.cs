@@ -10,9 +10,9 @@ namespace GDRPC.Discord
     {
         public static void Initialize(string appID)
         {
-            /*fix bug with callback system*/
             if (!System.IO.File.Exists(DiscordLib.LibName))
-                AppRunner.MSG.Error("Discord library rich presence (w-32) not found.");
+                AppRunner.MSG.Error("Fatal error: drw-32 not found");
+            /*fix bug with callback system*/
             DiscordLib.EventHandlers handlers = new DiscordLib.EventHandlers();
             handlers.readyCallback += ready;
             DiscordLib.Initialize(appID, ref handlers, true, null);
