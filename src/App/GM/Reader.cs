@@ -83,6 +83,11 @@ namespace GDRPC.App.GM
             /// Diff Demon
             /// </summary>
             public static int DiffDemon => Read<int>(0x2A0, new[] { 0x003222D0, 0x164, 0x22C, 0x114 });
+
+            /// <summary>
+            /// тип уровня
+            /// </summary>
+            public static int LevelType => Read<int>(0x364, new[] { 0x003222D0, 0x164, 0x22C, 0x114 });
         }
 
         public class Editor

@@ -89,7 +89,7 @@ namespace GDRPC.App
                 if (GM.Reader.Level.IsOpened)
                     await AppLevel.Run();
                 else if (GM.Reader.Editor.IsOpened)
-                    Console.WriteLine("Creator: " + GM.Reader.Editor.BlockCount);
+                    await AppEditor.Run();
                 else
                 {
                     Discord.RichPresence rpc = App.defaultRpc;
@@ -97,7 +97,7 @@ namespace GDRPC.App
                     Discord.Discord.SetPresence(rpc);
                 }    
 
-                await Task.Delay(1500);
+                await Task.Delay(500);
             }
         }
 
