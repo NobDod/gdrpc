@@ -22,6 +22,3 @@ GDRPC.AppRunner.Run();
 appID - your discord app id.
 processName - game process name. Default: GeometryDash
 ext=.exe - ext file. (for windows). leave it as it is.
-
-## Help me!
-Go to [wiki site](https://hopixteam.ru/gdrpc/wiki)
