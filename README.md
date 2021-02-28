@@ -8,7 +8,6 @@ You only call one function.
 Thread rpc = new Thread(GDRPC.AppRunner.Run);
 rpc.Start();
 ```
-
 ### With task
 ```c#
 Task.Run(() => GDRPC.AppRunner.Run());
