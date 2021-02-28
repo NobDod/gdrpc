@@ -3,7 +3,7 @@ GDRPC allow you to show additional information about the game on Discord. For ex
 You only call one function.
 
 ## Download for original game
-
+Go to [releases](https://github.com/hopixteam/gdrpc/releases)
 
 ## Example (for private servers)
 Recommended: use a LDR service (you just need to compile GDRPC.dll and add the files (download them from release): `libcurl.dll`,` gdrpc_cli.dll`, `gdrpc_ldr.dll` to game)
