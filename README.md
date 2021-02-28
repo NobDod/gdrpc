@@ -6,7 +6,7 @@ You only call one function.
 Go to [releases](https://github.com/hopixteam/gdrpc/releases)
 
 ## Example (for private servers)
-Recommended: use a LDR service (you just need to compile GDRPC.dll and add the files (download them from release): `libcurl.dll`,` gdrpc_cli.dll`, `gdrpc_ldr.dll` to game)
+Recommended: use a LDR service (you just need to compile GDRPC.dll and add the files (download them from release): `libcurl.dll`,` gdrpc_cli.dll`, `gdrpc_ldr.dll` and your builded `GDRPC.dll` to game)
 
 ### With thread
 ```c#
