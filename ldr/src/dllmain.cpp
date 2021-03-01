@@ -5,12 +5,11 @@
 
 typedef void* (__cdecl* fRun)();
 fRun run;
-
+HMODULE rpc;
 DWORD WINAPI Ldr(void* hMod) {
-    HMODULE rpc = LoadLibrary(L"gdrpc_cli.dll");
+    rpc = LoadLibrary(L"gdrpc_cli.dll");
     run = (fRun)GetProcAddress(rpc, "Start");
     run();
-
     return 0;
 }
 
