@@ -9,7 +9,7 @@ namespace GDRPC.Discord
 {
     class DiscordLib
     {
-        public const string LibName = "discord-rpc-w32.dll";
+        public const string LibName = "gdrpc_discord_rpc_w32.dll";
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void ReadyCallback();

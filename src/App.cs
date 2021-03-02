@@ -9,25 +9,8 @@ namespace GDRPC
 {
     public class AppRunner
     {
-        #region App Control
-        public static void MessageBox(string title, string text, long icon, long button)
-        {
-            WinApi.MessageBox.Show((int)Process.GetCurrentProcess().MainWindowHandle, text, title, (uint)(icon | button));
-        }
-
-        //with close app
-        public class MSG
-        {
-            public static void Error(string text)
-            {
-                MessageBox("GDRPC", text, MB.Icon.Error, MB.Buttons.Ok);
-                Environment.Exit(5);
-                return;
-            }
-        }
-        #endregion
-
-        public static DateTime StartApp;
+        private static DateTime startApp;
+        public static DateTime StartApp { get => startApp; }
 
         /// <summary>
         /// Run wihout console
@@ -37,7 +20,9 @@ namespace GDRPC
         /// <summary>
         /// Stop wihout console
         /// </summary>
-        public static void Stop() => App.App.Stop();
+        public static void Stop() {
+            App.App.Stop();
+        }
 
         /// <summary>
         /// Run with console
@@ -45,36 +30,102 @@ namespace GDRPC
         /// <param name="args"></param>
         private static void Main(string[] args)
         {
-            StartApp = DateTime.UtcNow;
-            if (WinApi.Consoler.IsConsole())
-            {
+            startApp = DateTime.UtcNow;
+            Initialize.Run();
 #if DEBUG
-                Console.Title = "GDRPC";
-#endif
-                Console.WriteLine("Geometry Dash Rich Presence");
-                App.App.Run().ConfigureAwait(false);
-#if DEBUG
-                while (true) { Console.ReadKey(true); }
-#endif
-            }
+            if (!WinApi.Consoler.IsConsole())
+                WinApi.Consoler.CreateConsole(true, true);
+            Console.Title = "GDRPC";
+            Console.WriteLine("Geometry Dash Rich Presence");
             App.App.Run().ConfigureAwait(false);
+            while (true) { Console.ReadKey(true); }
+#else
+            App.App.Run().ConfigureAwait(false);
+#endif
+        }
+
+        //class for initializng app!!!
+        class Initialize
+        {
+            public static void Run()
+            {
+                AppDomain.CurrentDomain.UnhandledException += AppUnhandlerExpection_Event;
+                WinApi.Consoler.IsConsole();//for cache
+            }
+
+            private static void AppUnhandlerExpection_Event(object sender, UnhandledExceptionEventArgs e)
+            {
+                Exception ex = (Exception)e.ExceptionObject;
+            }
+        }
+
+        /// <summary>
+        /// Create message box
+        /// </summary>
+        /// <param name="title"></param>
+        /// <param name="text"></param>
+        /// <param name="icon"></param>
+        /// <param name="button"></param>
+        public static void MessageBox(string title, string text, long icon, long button)
+        {
+            int handle = (int)Process.GetCurrentProcess().MainWindowHandle;
+            if (handle == 0 && !WinApi.Consoler.IsConsole())
+            {
+                WinApi.Consoler.CreateConsole();
+                handle = (int)WinApi.Consoler.GetConsoleWindow();
+            }
+            WinApi.MessageBox.Show(handle, text, title, (uint)(icon | button));
+            if (handle == (int)WinApi.Consoler.GetConsoleWindow() && !WinApi.Consoler.IsConsole())
+                WinApi.Consoler.CloseConsole();
+        }
+        public class MessageBoxFast
+        {
+            public static void Error(string text, bool isExit=false, bool tryAgain=false)
+            {
+                MessageBox("GDRPC", text, MB.Icon.Error, MB.Buttons.Ok);
+                if(isExit)
+                    Environment.Exit(5);
+                else if (tryAgain)
+                {
+                    Stop();
+                    Run();
+                }
+                return;
+            }
         }
     }
 
-    //analog
-    [InterfaceType(ComInterfaceType.InterfaceIsDual)]
-    public interface AppRunnerInterface
+    /// <summary>
+    /// Этот класс необязательный, но отлично сойдет кому требуется AppRunner с интерфейсом. 
+    /// </summary>
+    class AppRunnerInterfaces
     {
-        [DispId(1)]
-        void Run();
+        //analog
+        [InterfaceType(ComInterfaceType.InterfaceIsDual)]
+        public interface AppRunnerInterface
+        {
+            /// <summary>
+            /// Run without console
+            /// </summary>
+            [DispId(1)]
+            void Run();
 
-        [DispId(2)]
-        void Stop();
-    };
-
-    public class AppRunnerExport : AppRunnerInterface
-    {
-        public void Run() => AppRunner.Run();
-        public void Stop() => AppRunner.Stop();
+            /// <summary>
+            /// Stop without console
+            /// </summary>
+            [DispId(2)]
+            void Stop();
+        };
+        public class AppRunnerExport : AppRunnerInterface
+        {
+            /// <summary>
+            /// Run without console
+            /// </summary>
+            public void Run() => AppRunner.Run();
+            /// <summary>
+            /// Stop wihout console
+            /// </summary>
+            public void Stop() => AppRunner.Stop();
+        }
     }
 }

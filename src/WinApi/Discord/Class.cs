@@ -11,7 +11,7 @@ namespace GDRPC.Discord
         public static void Initialize(string appID)
         {
             if (!System.IO.File.Exists(DiscordLib.LibName))
-                AppRunner.MSG.Error("Fatal error: drw-32 not found");
+                AppRunner.MessageBoxFast.Error("Failed to loading GDRPC: " + DiscordLib.LibName + " not found", true);
             /*fix bug with callback system*/
             DiscordLib.EventHandlers handlers = new DiscordLib.EventHandlers();
             handlers.readyCallback += ready;
@@ -36,7 +36,7 @@ namespace GDRPC.Discord
 
             presence2.startTimestamp = DateTimeToTimestamp(presence.Timestamps.Start);
             presence2.endTimestamp = DateTimeToTimestamp(presence.Timestamps.End);
-            DiscordLib.UpdatePresence(ref presence2);
+            try { DiscordLib.UpdatePresence(ref presence2);}catch { }
         }
 
         public static void Deinitialize() => DiscordLib.Shutdown();
@@ -48,7 +48,7 @@ namespace GDRPC.Discord
             return (dt.Ticks - 621355968000000000) / 10000000;
         }
 
-        public static void ready()
+        private static void ready()
         {
             Console.WriteLine("Discord ready");
         }
