@@ -36,8 +36,8 @@ namespace GDRPC
             if (!WinApi.Consoler.IsConsole())
                 WinApi.Consoler.CreateConsole(true, true);
             Console.Title = "GDRPC";
-            Log.WriteLine("[AppRunner]: " + startApp.ToString());
             Console.WriteLine("Geometry Dash Rich Presence");
+            Log.WriteLine("[AppRunner]: " + startApp.ToString());
             App.App.Run().ConfigureAwait(false);
             while (true) { Console.ReadKey(true); }
 #else

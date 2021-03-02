@@ -31,6 +31,14 @@ namespace GDRPC.WinApi
         }
 
         /// <summary>
+        /// Изменить вывод консоли.
+        /// </summary>
+        public static void SetOutConsole()
+        {
+            OutConsoleChange.OverrideRedirection();
+        }
+
+        /// <summary>
         /// Открыть консоль (даже если вы не создавали)
         /// </summary>
         /// <param name="cacheChange">Изменить кэш о открытом консоли на открытый.</param>
