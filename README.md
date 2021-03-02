@@ -39,4 +39,4 @@ processName - game process name. Default: GeometryDash
 ext=.exe - ext file. (for windows). leave it as it is.
 
 ## Thanks
-[Partur](https://github.com/partur1) - Loader GDRPC (ldr) creater
+[@Partur](https://github.com/partur1) - help with GDRPC loader (ldr) 
