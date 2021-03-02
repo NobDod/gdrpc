@@ -24,6 +24,8 @@ namespace GDRPC.App
         private static Memory.MemoryReader _gm;
         public static Memory.MemoryReader GameManager { get => _gm; }
 
+        //temp bool
+        private static bool[] temp = new bool[5];
 
         //default gdrpc
         public static Discord.RichPresence defaultRpc = new Discord.RichPresence
@@ -64,8 +66,9 @@ namespace GDRPC.App
                 _im = new WinApi.IniManager(conf);
 
                 //check config
+                Log.WriteLine("[App]: Config with temp directory initialized. Temp dir: " + _tm);
                 if (!_im.IsKey("g", "appID"))
-                    AppRunner.MSG.Error("Fatal error: config extracting error");
+                    AppRunner.MessageBoxFast.Error("Failed to loading GDRPC: extracting config failed.", true);
             }
 
             //запусk gdrpc
@@ -81,6 +84,7 @@ namespace GDRPC.App
                     {
                         Discord.Discord.Deinitialize();
                         Config.RemoveKey("p", "_disinit");
+                        await Sleeping();
                     }
                     await ProcessInitialize();
 
@@ -88,14 +92,10 @@ namespace GDRPC.App
                     Discord.Discord.Initialize(Config.Read("g", "appID"));
                     Discord.Discord.SetPresence(defaultRpc);
                     Config.Write("p", "_disinit", "+");
-#if DEBUG
-                    Console.WriteLine("Debug mode unlimited delay");
-                    await Task.Delay(1000);
-#else
-                    await Task.Delay(5000);
-#endif
+                    await Sleeping();
                     continue;
                 }
+
                 if (GM.Reader.Level.IsOpened)
                     await AppLevel.Run();
                 else if (GM.Reader.Editor.IsOpened)
@@ -114,10 +114,10 @@ namespace GDRPC.App
         /// <summary>
         /// Stop GDRPC
         /// </summary>
-        public static void Stop()
+        public static void Stop(bool removeDirectory=true)
         {
             string tmPa = System.IO.Path.GetTempPath() + "\\HopixTeam\\GDRPC";
-            if (System.IO.Directory.Exists(tmPa))
+            if (System.IO.Directory.Exists(tmPa) && removeDirectory)
                 System.IO.Directory.Delete(tmPa, true);
             if (Config.IsKey("p", "_disinit"))
             {
@@ -128,16 +128,27 @@ namespace GDRPC.App
             _im = null;
             _gp = null;
             _gm = null;
+            Log.WriteLine("[App]: Stopped");
         }
 
         //privates
         private static async Task ProcessInitialize()
         {
-            Console.WriteLine("GP find");
+            Log.WriteLine("[GameFinder]: Finding process with name " + _im.Read("g", "processName"));
             _gp = await ProcessFinder.FindProcess(_im.Read("g", "processName"));
             _gm = new Memory.MemoryReader(_im.Read("g", "processName") + _im.Read("g", "ext"), _gp);
             defaultRpc.Timestamps.Start = DateTime.UtcNow;
-            Console.WriteLine("Debug PID: " + _gp.Id);
+            Log.WriteLine("[GameFinder]: Process finded. PID: " + _gp.Id);
+        }
+
+        private static async Task Sleeping()
+        {
+#if DEBUG
+            Log.WriteLine("[Debug]: Debug mode setted delay to 1000");
+            await Task.Delay(1000);
+#else
+            await Task.Delay(5000);
+#endif
         }
     }
 }

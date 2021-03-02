@@ -8,14 +8,15 @@ namespace GDRPC.App.GM
 {
     class Reader
     {
-        public static T Read<T>(int mainAddres, int[] offests) where T : struct
-        {
-            return App.GameManager.Read<T>(IntPtr.Add(App.GameManager.Read<IntPtr>(offests), mainAddres).ToInt64());
-        }
-        public static T Read<T>(int[] offests) where T : struct
-        {
-            return App.GameManager.Read<T>(App.GameManager.Read<IntPtr>(offests).ToInt64());
-        }
+        /// <summary>
+        /// Чтение памяти с GM (GameManager) функции. Облегченная версия.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="mainAddres">Основной адрес откуда требуется считать (иногда их нету)</param>
+        /// <param name="offests">оффсеты.</param>
+        /// <returns></returns>
+        public static T Read<T>(int mainAddres, int[] offests) where T : struct => App.GameManager.Read<T>(IntPtr.Add(App.GameManager.Read<IntPtr>(offests), mainAddres).ToInt64());
+        public static T Read<T>(int[] offests) where T : struct => App.GameManager.Read<T>(App.GameManager.Read<IntPtr>(offests).ToInt64());
 
         /// <summary>
         /// ID сцен. 

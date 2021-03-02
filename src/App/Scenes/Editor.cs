@@ -16,7 +16,7 @@ namespace GDRPC.App
             {
                 int blocks = GM.Reader.Editor.BlockCount;
 #if DEBUG
-                Console.WriteLine("Blocks: {0}", blocks);
+                Log.WriteLine("[AppEvent (Editor)]: Blocks: {0}", blocks);
 #endif
                 Discord.RichPresence rpc = App.defaultRpc;
                 rpc.Details = "Editing level";

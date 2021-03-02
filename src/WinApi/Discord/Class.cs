@@ -17,6 +17,7 @@ namespace GDRPC.Discord
             handlers.readyCallback += ready;
             DiscordLib.Initialize(appID, ref handlers, true, null);
             DiscordLib.RunCallbacks();
+            Log.WriteLine("[DiscordRPC]: Initialized discord RPC.");
         }
 
         public static void SetPresence(RichPresence presence)
@@ -36,10 +37,14 @@ namespace GDRPC.Discord
 
             presence2.startTimestamp = DateTimeToTimestamp(presence.Timestamps.Start);
             presence2.endTimestamp = DateTimeToTimestamp(presence.Timestamps.End);
-            try { DiscordLib.UpdatePresence(ref presence2);}catch { }
+            DiscordLib.UpdatePresence(ref presence2);
         }
 
-        public static void Deinitialize() => DiscordLib.Shutdown();
+        public static void Deinitialize()
+        {
+            DiscordLib.Shutdown();
+            Log.WriteLine("[DiscordRPC]: discord RPC shutdowned.");
+        }
 
         private static long DateTimeToTimestamp(DateTime dt)
         {
@@ -50,7 +55,7 @@ namespace GDRPC.Discord
 
         private static void ready()
         {
-            Console.WriteLine("Discord ready");
+            Log.WriteLine("[DiscordRPC]: Ready ");
         }
     }
 }

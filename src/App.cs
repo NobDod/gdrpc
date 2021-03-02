@@ -36,6 +36,7 @@ namespace GDRPC
             if (!WinApi.Consoler.IsConsole())
                 WinApi.Consoler.CreateConsole(true, true);
             Console.Title = "GDRPC";
+            Log.WriteLine("[AppRunner]: " + startApp.ToString());
             Console.WriteLine("Geometry Dash Rich Presence");
             App.App.Run().ConfigureAwait(false);
             while (true) { Console.ReadKey(true); }
@@ -56,6 +57,11 @@ namespace GDRPC
             private static void AppUnhandlerExpection_Event(object sender, UnhandledExceptionEventArgs e)
             {
                 Exception ex = (Exception)e.ExceptionObject;
+                Log.WriteLine("[AppRunner]: Error: {0}", ex.Message);
+#if DEBUG
+                Log.WriteLine("[AppRunner]: Stack code: {1}",ex.StackTrace);
+#endif
+                Log.WriteLine("[AppRunner]: If you don`t fixed this problem, go to https://github.com/hopixteam/gdrpc/issues and create issue with label: \"Bug\"");
             }
         }
 

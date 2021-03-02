@@ -46,9 +46,9 @@ namespace GDRPC.App
                 if (procent < 0)
                     continue;
 #if DEBUG
-                Console.WriteLine("Level: {0}, diff: {1} ({2}), procent: {5} (t:{6}), isAuto: {3}, isDemon: {4}",
+                Log.WriteLine("[AppEvent (Level)]: Level: {0}, diff: {1} ({2}), procent: {5} (t:{6}), isAuto: {3}, isDemon: {4}",
                     levelID, Diff.ToString(), iconSet, "-", isDemon.ToString(), procent, totalProcent) ;
-                Console.WriteLine("X POS: {0}, Len: {1}, Attempts: {2}",
+                Log.WriteLine("[AppEvent (Level)]: X POS: {0}, Len: {1}, Attempts: {2}",
                    GM.Reader.Level.Utils.XPOS, GM.Reader.Level.Utils.LenLevel, attempts);
 #endif
                 bool isOnline = (type == GM.LevelType.SAVED || type == GM.LevelType.ONLINE);
