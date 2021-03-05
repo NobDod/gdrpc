@@ -116,16 +116,19 @@ namespace GDRPC.App
         /// </summary>
         public static void Stop(bool removeDirectory=true)
         {
-            string tmPa = System.IO.Path.GetTempPath() + "\\HopixTeam\\GDRPC";
-            if (System.IO.Directory.Exists(tmPa) && removeDirectory)
-                System.IO.Directory.Delete(tmPa, true);
             if (Config.IsKey("p", "_disinit"))
             {
                 Discord.Discord.Deinitialize();
                 Config.RemoveKey("p", "_disinit");
             }
-            _tm = "";
-            _im = null;
+            string tmPa = System.IO.Path.GetTempPath() + "\\HopixTeam\\GDRPC";
+            if (System.IO.Directory.Exists(tmPa) && removeDirectory)
+                System.IO.Directory.Delete(tmPa, true);
+            if (!removeDirectory)
+            {
+                _tm = "";
+                _im = null;
+            }
             _gp = null;
             _gm = null;
             Log.WriteLine("[App]: Stopped");

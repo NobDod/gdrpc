@@ -15,8 +15,8 @@ namespace GDRPC.App.GM
         /// <param name="mainAddres">Основной адрес откуда требуется считать (иногда их нету)</param>
         /// <param name="offests">оффсеты.</param>
         /// <returns></returns>
-        public static T Read<T>(int mainAddres, int[] offests) where T : struct => App.GameManager.Read<T>(IntPtr.Add(App.GameManager.Read<IntPtr>(offests), mainAddres).ToInt64());
-        public static T Read<T>(int[] offests) where T : struct => App.GameManager.Read<T>(App.GameManager.Read<IntPtr>(offests).ToInt64());
+        public static T Read<T>(int mainAddres, int[] offests) where T : struct => App.GameManager.Read<T>(offests, mainAddres);
+        public static T Read<T>(int[] offests) where T : struct => App.GameManager.Read<T>(offests, true);
 
         /// <summary>
         /// ID сцен. 
@@ -30,6 +30,7 @@ namespace GDRPC.App.GM
                 //господи, XPOS = , 30 минут фиксил баг класс
                 public static float XPOS => Read<float>(0x67C, new int[] { 0x003222D0, 0x164, 0x224, 0x4E8, 0xB4 });
 
+
                 public static float LenLevel => Read<float>(0x3B4, new int[] { 0x003222D0, 0x164 });
                 public static int LevelID => Read<int>(0x2A0, new[] { 0x003222D0 });
             }
@@ -38,6 +39,11 @@ namespace GDRPC.App.GM
             /// Открыт ли уровень?
             /// </summary>
             public static bool IsOpened => Read<bool>(new[] { 0x003222D0, 0x164, 0x22C, 0x114 });
+
+            /// <summary>
+            /// Уровень запущен в практик режиме
+            /// </summary>
+            public static bool IsPracticeMode => Read<bool>(new[] { 0x003222D0, 0x164, 0x495 });
 
             /// <summary>
             /// ID уровня
@@ -58,6 +64,11 @@ namespace GDRPC.App.GM
             /// Количество процентов пройденого уровня
             /// </summary>
             public static int BestProcent => Read<int>(0x248, new[] { 0x003222D0, 0x164, 0x22C, 0x114 });
+
+            /// <summary>
+            /// Количество практичных процентов пройденого уровня
+            /// </summary>
+            public static int BestPracticeProcent => Read<int>(0x26C, new[] { 0x003222D0, 0x164, 0x22C, 0x114 });
 
             /// <summary>
             /// Текущие проценты 
