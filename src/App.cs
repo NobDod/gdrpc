@@ -31,7 +31,6 @@ namespace GDRPC
         private static void Main(string[] args)
         {
             startApp = DateTime.UtcNow;
-            Initialize.Run();
 #if DEBUG
             if (!WinApi.Consoler.IsConsole())
                 WinApi.Consoler.CreateConsole(true, true);
@@ -43,26 +42,6 @@ namespace GDRPC
 #else
             App.App.Run().ConfigureAwait(false);
 #endif
-        }
-
-        //class for initializng app!!!
-        class Initialize
-        {
-            public static void Run()
-            {
-                AppDomain.CurrentDomain.UnhandledException += AppUnhandlerExpection_Event;
-                WinApi.Consoler.IsConsole();//for cache
-            }
-
-            private static void AppUnhandlerExpection_Event(object sender, UnhandledExceptionEventArgs e)
-            {
-                Exception ex = (Exception)e.ExceptionObject;
-                Log.WriteLine("[AppRunner]: Error: {0}", ex.Message);
-#if DEBUG
-                Log.WriteLine("[AppRunner]: Stack code: {1}",ex.StackTrace);
-#endif
-                Log.WriteLine("[AppRunner]: If you don`t fixed this problem, go to https://github.com/hopixteam/gdrpc/issues and create issue with label: \"Bug\"");
-            }
         }
 
         /// <summary>
@@ -77,7 +56,7 @@ namespace GDRPC
             int handle = (int)Process.GetCurrentProcess().MainWindowHandle;
             if (handle == 0 && !WinApi.Consoler.IsConsole())
             {
-                WinApi.Consoler.CreateConsole();
+                WinApi.Consoler.CreateConsole(false, false);
                 handle = (int)WinApi.Consoler.GetConsoleWindow();
             }
             WinApi.MessageBox.Show(handle, text, title, (uint)(icon | button));
