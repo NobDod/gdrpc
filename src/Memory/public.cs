@@ -9,9 +9,9 @@ namespace GDRPC.Memory
 {
     class MemoryReader
     {
-        private MemoryReaderPrivate p;
+        private readonly MemoryReaderPrivate p;
         public MemoryReaderPrivate Manager { get => p; }
-        private string pn;
+        private readonly string pn;
         public MemoryReader(string processName, Process process)
         {
             pn = processName;

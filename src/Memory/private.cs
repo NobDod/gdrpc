@@ -72,8 +72,8 @@ namespace GDRPC.Memory
             }
         }
 
-        private int[] bytes = new int[2];
-        private Process process;
+        private readonly int[] bytes = new int[2];
+        private readonly Process process;
         private IntPtr handle;
         private int access = AppAccess.PROCESS_VM_READ | AppAccess.PROCESS_VM_WRITE | AppAccess.PROCESS_VM_OPERATION;
 
@@ -103,30 +103,30 @@ namespace GDRPC.Memory
         public MemoryReaderPrivate(Process process)
         {
             this.process = process;
-            _init(process);
+            Init(process);
         }
 
         public MemoryReaderPrivate(Process process, int access)
         {
             this.process = process;
             this.access = access;
-            _init(process);
+            Init(process);
         }
 
         public MemoryReaderPrivate(string processName)
         {
             while (!Library.GetProcess(processName, out this.process)) Task.Delay(500).ConfigureAwait(false);
-            _init(process);
+            Init(process);
         }
 
         public MemoryReaderPrivate(string processName, int access)
         {
             while (!Library.GetProcess(processName, out this.process)) Task.Delay(500).ConfigureAwait(false);
             this.access = access;
-            _init(process);
+            Init(process);
         }
 
-        private void _init(Process process)
+        private void Init(Process process)
         {
             handle = Library.OpenProcess(this.access, false, process.Id);
         }
