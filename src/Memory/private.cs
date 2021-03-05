@@ -100,26 +100,26 @@ namespace GDRPC.Memory
         #endregion
 
         #region Inititlizer
-        public MemoryReaderPrivate1(Process process)
+        public MemoryReaderPrivate(Process process)
         {
             this.process = process;
             _init(process);
         }
 
-        public MemoryReaderPrivate1(Process process, int access)
+        public MemoryReaderPrivate(Process process, int access)
         {
             this.process = process;
             this.access = access;
             _init(process);
         }
 
-        public MemoryReaderPrivate1(string processName)
+        public MemoryReaderPrivate(string processName)
         {
             while (!Library.GetProcess(processName, out this.process)) Task.Delay(500).ConfigureAwait(false);
             _init(process);
         }
 
-        public MemoryReaderPrivate1(string processName, int access)
+        public MemoryReaderPrivate(string processName, int access)
         {
             while (!Library.GetProcess(processName, out this.process)) Task.Delay(500).ConfigureAwait(false);
             this.access = access;
