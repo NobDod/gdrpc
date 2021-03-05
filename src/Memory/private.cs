@@ -1,94 +1,163 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading.Tasks;
 
-/* 
- * Geometry Dash api читатель с дополнением. Класс приватный, потому-что
- * я в любой момент могу что-то поменять :)
- */
 namespace GDRPC.Memory
 {
+    /// <summary>
+    /// Официально переписано для GDRPC.
+    /// by NobDod
+    /// </summary>
     class MemoryReaderPrivate
     {
-        #region Static
-
-        public static readonly int PTR_LEN = 4;
-        #endregion
-
-        #region Dll import
-        [DllImport("kernel32.dll")]
-        protected static extern IntPtr OpenProcess(int dwDesiredAccess, bool bInheritHandle, int dwProcessId);
-
-        [DllImport("kernel32.dll")]
-        protected static extern bool ReadProcessMemory(int hProcess, int lpBaseAddress, byte[] buffer, int size, ref int lpNumberOfBytesRead);
-
-        [DllImport("kernel32.dll")]
-        protected static extern bool WriteProcessMemory(int hProcess, int lpBaseAddress, byte[] buffer, int size, out int lpNumberOfBytesWritten);
-        #endregion
-
-        public string ProcessName { get; protected set; }
-
-        public int BytesRead;
-        public int BytesWrite;
-
-        public Process Game;
-        public IntPtr GameHandle;
-
-        public bool Initialize(Process process, int access, string processName)
+        class Library
         {
-            ProcessName = processName;
-            if (process == null)
+            public static IntPtr GetModuleAddress(Process process, string moduleFullName)
+            {
+                foreach (ProcessModule module in process.Modules)
+                {
+                    if (moduleFullName == module.ModuleName)
+                        return module.BaseAddress;
+                }
+                return (IntPtr)(-1);
+            }
+
+            public static bool GetProcess(string processName, out Process process)
             {
                 Process[] processes = Process.GetProcessesByName(processName);
                 if (processes.Length > 0)
-                    Game = Process.GetProcessesByName(processName)[0];
+                    process = Process.GetProcessesByName(processName)[0];
                 else
-                    return false;
+                    process = null;
+                return (process == null);
             }
-            else
-            {
-                Game = process;
-            }
-            GameHandle = OpenProcess(access, false, Game.Id);
-            return true;
+
+            [DllImport("kernel32.dll")]
+            public static extern IntPtr OpenProcess(int dwDesiredAccess, bool bInheritHandle, int dwProcessId);
+
+            [DllImport("kernel32.dll")]
+            public static extern bool ReadProcessMemory(int hProcess, int lpBaseAddress, byte[] buffer, int size, ref int lpNumberOfBytesRead);
+
+            [DllImport("kernel32.dll")]
+            public static extern bool WriteProcessMemory(int hProcess, int lpBaseAddress, byte[] buffer, int size, out int lpNumberOfBytesWritten);
         }
 
-        public IntPtr GetModuleAddress(string moduleFullName)
+        class BytesConvert
         {
-            foreach (ProcessModule module in Game.Modules)
+            public static T BytesToStructure<T>(byte[] bytes) where T : struct
             {
-                if (moduleFullName == module.ModuleName)
-                    return module.BaseAddress;
-            }
-            return (IntPtr)(-1);
-        }
-
-        public ProcessModule GetModule(string moduleFullName)
-        {
-            try
-            {
-                foreach (ProcessModule module in Game.Modules)
+                GCHandle handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
+                try
                 {
-                    if (moduleFullName == module.ModuleName)
-                        return module;
+                    return (T)Marshal.PtrToStructure(handle.AddrOfPinnedObject(), typeof(T));
+                }
+                finally
+                {
+                    handle.Free();
                 }
             }
-            catch
+            public static byte[] StructureToBytes(object value)
             {
+                int size = Marshal.SizeOf(value);
+                byte[] array = new byte[size];
+                IntPtr ptr = Marshal.AllocHGlobal(size);
+                Marshal.StructureToPtr(value, ptr, true);
+                Marshal.Copy(ptr, array, 0, size);
+                Marshal.FreeHGlobal(ptr);
+                return array;
+            }
+        }
 
+        private int[] bytes = new int[2];
+        private Process process;
+        private IntPtr handle;
+        private int access = AppAccess.PROCESS_VM_READ | AppAccess.PROCESS_VM_WRITE | AppAccess.PROCESS_VM_OPERATION;
+
+        #region Public read
+        /// <summary>
+        /// Байтов было прочитано.
+        /// </summary>
+        public int BytesRead { get => bytes[0]; }
+
+        /// <summary>
+        /// Байтов было записано.
+        /// </summary>
+        public int BytesWrited { get => bytes[1]; }
+
+        /// <summary>
+        /// Процесс игры
+        /// </summary>
+        public Process GameProcess { get => process; }
+
+        /// <summary>
+        /// Адрес для чтения или записи процесса.
+        /// </summary>
+        public IntPtr GameHandleProcess { get => handle; }
+        #endregion
+
+        #region Inititlizer
+        public MemoryReaderPrivate1(Process process)
+        {
+            this.process = process;
+            _init(process);
+        }
+
+        public MemoryReaderPrivate1(Process process, int access)
+        {
+            this.process = process;
+            this.access = access;
+            _init(process);
+        }
+
+        public MemoryReaderPrivate1(string processName)
+        {
+            while (!Library.GetProcess(processName, out this.process)) Task.Delay(500).ConfigureAwait(false);
+            _init(process);
+        }
+
+        public MemoryReaderPrivate1(string processName, int access)
+        {
+            while (!Library.GetProcess(processName, out this.process)) Task.Delay(500).ConfigureAwait(false);
+            this.access = access;
+            _init(process);
+        }
+
+        private void _init(Process process)
+        {
+            handle = Library.OpenProcess(this.access, false, process.Id);
+        }
+        #endregion
+
+        #region Base
+        public ProcessModule GetModule(string moduleFullName)
+        {
+            foreach (ProcessModule module in process.Modules)
+            {
+                if (moduleFullName == module.ModuleName)
+                    return module;
             }
             return null;
         }
+        #endregion
 
+        #region Reader
+        /// <summary>
+        /// Прочитать адрес
+        /// </summary>
+        /// <typeparam name="T">тип адреса, в котором как раз будет вернут результат.</typeparam>
+        /// <param name="address">адрес</param>
+        /// <returns></returns>
         public T Read<T>(long address) where T : struct
         {
             try
             {
-                int ByteSize = Marshal.SizeOf(typeof(T));
-                byte[] buffer = new byte[ByteSize];
-                ReadProcessMemory((int)GameHandle, (int)address, buffer, buffer.Length, ref this.BytesRead);
-                return this.BytesToStructure<T>(buffer);
+                byte[] buffer = new byte[Marshal.SizeOf(typeof(T))];
+                Library.ReadProcessMemory((int)this.handle, (int)address, buffer, buffer.Length, ref this.bytes[0]);
+                return BytesConvert.BytesToStructure<T>(buffer);
             }
             catch
             {
@@ -96,107 +165,84 @@ namespace GDRPC.Memory
             }
         }
 
-        //TODO: Not the best option
-        public T Read<T>(ProcessModule module, int[] offsets) where T : struct
-        {
-            try
-            {
-                IntPtr[] pointers = new IntPtr[offsets.Length];
-                pointers[0] = this.Read<IntPtr>(IntPtr.Add(module.BaseAddress, offsets[0]).ToInt64());
-                for (int i = 1; i < offsets.Length; i++)
-                    pointers[i] = this.Read<IntPtr>(IntPtr.Add(pointers[i - 1], offsets[i]).ToInt64());
-                if (offsets.Length > 1)
-                    return this.Read<T>(IntPtr.Add(pointers[offsets.Length - 2], offsets[offsets.Length - 1]).ToInt64());
-                return this.Read<T>(IntPtr.Add(module.BaseAddress, offsets[0]).ToInt64());
-            }
-            catch
-            {
-                return default;
-            }
-        }
-
-
-        public int newAddress(long[] addresss)
-        {
-            long address = addresss[0];
-            try
-            {
-                for (int i = 1; i < addresss.Length; i++)
-                    address += addresss[i];
-            }
-            catch
-            {
-
-            }
-            return (int)address;
-        }
         /// <summary>
-        /// todo: 64 length not best, ставьте свой крч
+        /// Прочитать адреса через оффсеты. Является хорошим вариантом для чтение нескольких адресов, где просто так их не сложить. 
+        /// Минус этого может быть только нагрузка на систему (но не факт)
         /// </summary>
-        /// <param name="address"></param>
-        /// <param name="length"></param>
+        /// <typeparam name="T">тип адреса, в котором как раз будет вернут результат.</typeparam>
+        /// <param name="addresss">оффсет адреса</param>
+        /// <param name="twoReader">Вы можете указать вместо IntPtr (и повторно прочитать) эту переменную на правда, и всё! Мы за вас это сделаем!</param>
         /// <returns></returns>
-        public string ReadString(long address, int length)
+        public T Read<T>(ProcessModule module, int[] addresss, bool twoReader = false) where T : struct
         {
-            byte[] buffer = new byte[length];
-            ReadProcessMemory((int)GameHandle, (int)address, buffer, length, ref this.BytesRead);
-            return Encoding.ASCII.GetString(buffer);
-        }
-
-        public string ReadString2(long address, int length = 32768)
-        {
-            byte[] buffer = new byte[length];
-            ReadProcessMemory((int)GameHandle, (int)address, buffer, length, ref this.BytesRead);
-            return Encoding.ASCII.GetString(buffer);
-        }
-
-
-        public void Write<T>(int address, T value)
-        {
-            byte[] buffer = this.StructureToBytes(value);
-
-            WriteProcessMemory((int)GameHandle, address, buffer, buffer.Length, out this.BytesWrite);
-        }
-
-        protected T BytesToStructure<T>(byte[] bytes) where T : struct
-        {
-            GCHandle handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
             try
             {
-                return (T)Marshal.PtrToStructure(handle.AddrOfPinnedObject(), typeof(T));
+                //да да да, оптимизированная версия, а не тысячи IntPtr[]:)
+                //получаем основной адрес
+                IntPtr addressToRead = IntPtr.Add(module.BaseAddress, addresss[0]);
+                //если есть еще оффесты, добавляем их.
+                for (int i = 1; i < addresss.Count(); i++)
+                    addressToRead = IntPtr.Add(this.Read<IntPtr>(addressToRead.ToInt64()), addresss[i]);
+                //последнее чтение
+                if (!twoReader)
+                    return this.Read<T>(addressToRead.ToInt64());
+                return this.Read<T>(this.Read<IntPtr>(addressToRead.ToInt64()).ToInt64());
             }
-            finally
+            catch
             {
-                handle.Free();
+                return default;
             }
         }
 
-        protected byte[] StructureToBytes(object value)
-        {
-            int size = Marshal.SizeOf(value);
-            byte[] array = new byte[size];
-            IntPtr ptr = Marshal.AllocHGlobal(size);
-            Marshal.StructureToPtr(value, ptr, true);
-            Marshal.Copy(ptr, array, 0, size);
-            Marshal.FreeHGlobal(ptr);
-            return array;
-        }
-    }
+        /// <summary>
+        /// Сразу добавляем адрес для чтение (поскольку для некоторых оффестов надо получить для начало IntPtr а потом повторно его прочитать уже в другом типе)
+        /// Вот пример. Зачем вам надо "прочитать(ptr.add(прочитать(модуль)..." 
+        /// </summary>
+        /// <typeparam name="T">тип адреса, в котором как раз будет вернут результат.</typeparam>
+        /// <param name="address">оффсет адреса</param>
+        /// <param name="lastAddress">последний адрес который надо прочитать</param>
+        /// <param name="twoReader">Вы можете указать вместо IntPtr (и повторно прочитать) эту переменную на правда, и всё! Мы за вас это сделаем!</param>
+        /// <returns></returns>
+        public T Read<T>(ProcessModule module, int[] address, int lastAddress) where T : struct
+            => this.Read<T>(IntPtr.Add(this.Read<IntPtr>(module, address, false), lastAddress).ToInt64());
+        #endregion
 
-    class AppAccess
-    {
-        public const int PROCESS_CREATE_PROCESS = 0x0080;
-        public const int PROCESS_CREATE_THREAD = 0x0002;
-        public const int PROCESS_DUP_HANDLE = 0x0040;
-        public const int PROCESS_QUERY_INFORMATION = 0x0400;
-        public const int PROCESS_QUERY_LIMITED_INFORMATION = 0x1000;
-        public const int PROCESS_SET_INFORMATION = 0x0200;
-        public const int PROCESS_SET_QUOTA = 0x0100;
-        public const int PROCESS_SUSPEND_RESUME = 0x0800;
-        public const int PROCESS_TERMINATE = 0x0001;
-        public const int PROCESS_VM_OPERATION = 0x0008;
-        public const int PROCESS_VM_READ = 0x0010;
-        public const int PROCESS_VM_WRITE = 0x0020;
-        public const long SYNCHRONIZE = 0x00100000L;
+        #region Write
+        /// <summary>
+        /// Запись в память игры.
+        /// </summary>
+        /// <typeparam name="T">тип, который нужен для записи</typeparam>
+        /// <param name="address">адрес</param>
+        /// <param name="value">значение</param>
+        public void Write<T>(long address, T value)
+        {
+            byte[] buffer = BytesConvert.StructureToBytes(value);
+            Library.WriteProcessMemory((int)this.handle, (int)address, buffer, buffer.Length, out this.bytes[1]);
+        }
+
+        /// <summary>
+        /// Запись в память игры, в виде как чтение. Рекомендуем задействовать эту функцию, оно само посчитает адрес за вас!
+        /// Если у вас не работает, попробуйте обычную версию, или версию с расчётом последнего адреса.
+        /// </summary>
+        /// <typeparam name="T">тип, который нужен для записи</typeparam>
+        /// <param name="addresss">адреса</param>
+        /// <param name="value">значение</param>
+        public void Write<T>(ProcessModule module, int[] addresss, T value)
+        {
+            this.Write(this.Read<IntPtr>(module, addresss, false).ToInt64(), value);
+            Console.WriteLine("writed");
+        }
+
+        /// <summary>
+        /// Сразу добавляем адрес для записи (поскольку для некоторых оффестов надо получить для начало IntPtr а потом повторно его прочитать уже в другом типе)
+        /// </summary>
+        /// <typeparam name="T">тип, который нужен для записи</typeparam>
+        /// <param name="addresss">адреса</param>
+        /// <param name="lastAddress">последний адрес который надо прочитать</param>
+        /// <param name="value">значение</param>
+        /// <returns></returns>
+        public void Write<T>(ProcessModule module, int[] addresss, int lastAddress, T value)
+            => this.Write<T>(IntPtr.Add(this.Read<IntPtr>(module, addresss, false), lastAddress).ToInt64(), value);
+        #endregion
     }
 }
