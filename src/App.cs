@@ -42,7 +42,7 @@ namespace GDRPC
             Task.Delay(2000).Wait();
             Main(args);
 #else
-            App.App.Run().ConfigureAwait(false);
+            App.App.Run().Wait();
 #endif
         }
 
