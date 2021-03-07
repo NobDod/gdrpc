@@ -16,6 +16,7 @@ namespace GDRPC.Memory
     {
         class Library
         {
+            public const int WIN_ADDRESS = 0x10;
             public static IntPtr GetModuleAddress(Process process, string moduleFullName)
             {
                 foreach (ProcessModule module in process.Modules)
@@ -75,7 +76,7 @@ namespace GDRPC.Memory
         private readonly int[] bytes = new int[2];
         private readonly Process process;
         private IntPtr handle;
-        private int access = AppAccess.PROCESS_VM_READ | AppAccess.PROCESS_VM_WRITE | AppAccess.PROCESS_VM_OPERATION;
+        private readonly int access = AppAccess.PROCESS_VM_READ | AppAccess.PROCESS_VM_WRITE | AppAccess.PROCESS_VM_OPERATION;
 
         #region Public read
         /// <summary>
@@ -205,6 +206,67 @@ namespace GDRPC.Memory
         /// <returns></returns>
         public T Read<T>(ProcessModule module, int[] address, int lastAddress) where T : struct
             => this.Read<T>(IntPtr.Add(this.Read<IntPtr>(module, address, false), lastAddress).ToInt64());
+        
+        /// <summary>
+        /// Прочитать память и вернуть значение. 
+        /// </summary>
+        /// <param name="address">адрес</param>
+        /// <param name="len">длина</param>
+        /// <returns></returns>
+        public string ReadString(long address, int len)
+        {
+            byte[] bytes = new byte[len];
+            Library.ReadProcessMemory((int)this.handle, (int)address, bytes, bytes.Length, ref this.bytes[0]);
+            return System.Text.Encoding.ASCII.GetString(bytes).Replace("\0", string.Empty);
+        }
+
+        /// <summary>
+        /// Прочитать память через адреса. В случае исключения, будет вернут пустой ответ ("")
+        /// Встроен автоматический подсчёт длины текста.
+        /// </summary>
+        /// <param name="addresss">оффсет адреса</param>
+        /// <returns></returns>
+        public string ReadString(ProcessModule module, int[] addresss)
+        {
+            try
+            {
+                IntPtr memoryToRead = this.Read<IntPtr>(module, addresss, false);
+                int size_memoryToRead = this.Read<int>(IntPtr.Add(memoryToRead, Library.WIN_ADDRESS).ToInt64());
+                if (size_memoryToRead < Library.WIN_ADDRESS)
+                    return this.ReadString(memoryToRead.ToInt64(), size_memoryToRead);
+                memoryToRead = this.Read<IntPtr>(memoryToRead.ToInt64());
+                return this.ReadString(memoryToRead.ToInt64(), size_memoryToRead);
+            }
+            catch
+            {
+                return "";
+            }
+        }
+
+        /// <summary>
+        /// Прочитать память через адреса в котором еще требуется дополнительное чтение. В случае исключения, будет вернут пустой ответ ("")
+        /// Встроен автоматический подсчёт длины текста.
+        /// </summary>
+        /// <param name="addresss">оффсет адреса</param>
+        /// <param name="lastAddress">последний адрес который надо прочитать</param>
+        /// <returns></returns>
+        public string ReadString(ProcessModule module, int[] addresss, int lastAddress)
+        {
+            try
+            {
+                IntPtr memoryToRead = IntPtr.Add(this.Read<IntPtr>(module, addresss, false), lastAddress);
+                int size_memoryToRead = this.Read<int>(IntPtr.Add(memoryToRead, Library.WIN_ADDRESS).ToInt64());
+                if (size_memoryToRead < Library.WIN_ADDRESS)
+                    return this.ReadString(memoryToRead.ToInt64(), size_memoryToRead);
+                memoryToRead = this.Read<IntPtr>(memoryToRead.ToInt64());
+                return this.ReadString(memoryToRead.ToInt64(), size_memoryToRead);
+
+            }
+            catch
+            {
+                return "";
+            }
+        }
         #endregion
 
         #region Write
