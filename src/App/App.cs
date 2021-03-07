@@ -24,8 +24,6 @@ namespace GDRPC.App
         private static Memory.MemoryReader _gm;
         public static Memory.MemoryReader GameManager { get => _gm; }
 
-        //temp bool
-        private static bool[] temp = new bool[5];
 
         //default gdrpc
         public static Discord.RichPresence defaultRpc = new Discord.RichPresence

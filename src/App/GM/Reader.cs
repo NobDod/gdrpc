@@ -17,6 +17,9 @@ namespace GDRPC.App.GM
         /// <returns></returns>
         public static T Read<T>(int mainAddres, int[] offests) where T : struct => App.GameManager.Read<T>(offests, mainAddres);
         public static T Read<T>(int[] offests) where T : struct => App.GameManager.Read<T>(offests, true);
+        public static string ReadString(int[] offests) => App.GameManager.ReadString(offests);
+        public static string ReadString(int mainAddres, int[] offests) => App.GameManager.ReadString(offests, mainAddres);
+
 
         /// <summary>
         /// ID сцен. 
@@ -29,8 +32,6 @@ namespace GDRPC.App.GM
             {
                 //господи, XPOS = , 30 минут фиксил баг класс
                 public static float XPOS => Read<float>(0x67C, new int[] { 0x003222D0, 0x164, 0x224, 0x4E8, 0xB4 });
-
-
                 public static float LenLevel => Read<float>(0x3B4, new int[] { 0x003222D0, 0x164 });
                 public static int LevelID => Read<int>(0x2A0, new[] { 0x003222D0 });
             }
@@ -43,7 +44,7 @@ namespace GDRPC.App.GM
             /// <summary>
             /// Уровень запущен в практик режиме
             /// </summary>
-            public static bool IsPracticeMode => Read<bool>(new[] { 0x003222D0, 0x164, 0x495 });
+            public static bool IsPracticeMode => Read<bool>(0x495, new[] { 0x003222D0, 0x164 });
 
             /// <summary>
             /// ID уровня
@@ -100,6 +101,16 @@ namespace GDRPC.App.GM
             /// тип уровня
             /// </summary>
             public static int LevelType => Read<int>(0x364, new[] { 0x003222D0, 0x164, 0x22C, 0x114 });
+
+            /// <summary>
+            /// Название уровня
+            /// </summary>
+            public static string LevelName => ReadString(0xFC, new int[] { 0x3222D0, 0x164, 0x22C, 0x114 });
+
+            /// <summary>
+            /// Уровень был создан
+            /// </summary>
+            public static string CreatorName => ReadString(0x144, new int[] { 0x3222D0, 0x164, 0x22C, 0x114 });
         }
 
         public class Editor
