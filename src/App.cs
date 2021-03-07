@@ -37,8 +37,10 @@ namespace GDRPC
             Console.Title = "GDRPC";
             Console.WriteLine("Geometry Dash Rich Presence");
             Log.WriteLine("[AppRunner]: " + startApp.ToString());
-            App.App.Run().ConfigureAwait(false);
-            while (true) { Console.ReadKey(true); }
+            App.App.Run().Wait();
+            Log.WriteLine("[AppRunner]: App has stoped. Restarting (2sec)");
+            Task.Delay(2000).Wait();
+            Main(args);
 #else
             App.App.Run().ConfigureAwait(false);
 #endif
@@ -87,7 +89,7 @@ namespace GDRPC
     {
         //analog
         [InterfaceType(ComInterfaceType.InterfaceIsDual)]
-        public interface AppRunnerInterface
+        public interface IAppRunnerInterface
         {
             /// <summary>
             /// Run without console
@@ -101,7 +103,7 @@ namespace GDRPC
             [DispId(2)]
             void Stop();
         };
-        public class AppRunnerExport : AppRunnerInterface
+        public class AppRunnerExport : IAppRunnerInterface
         {
             /// <summary>
             /// Run without console
