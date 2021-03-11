@@ -16,7 +16,7 @@ namespace GDRPC.WinApi
         [DllImport("kernel32")]
         static extern int GetPrivateProfileString(string Section, string Key, string Default, StringBuilder RetVal, int Size, string FilePath);
 
-        private string _path;
+        private readonly string _path;
 
         public IniManager(string path)
         {
@@ -31,6 +31,8 @@ namespace GDRPC.WinApi
             GetPrivateProfileString(section, key, "", obj, len, this._path);
             return obj.ToString();
         }
+
+        public bool ReadInt(string section, string key, out int result, int len = 255) => int.TryParse(this.Read(section, key, len), out result);
 
         public void Write(string section, string key, string value)
         {

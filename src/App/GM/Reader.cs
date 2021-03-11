@@ -15,10 +15,10 @@ namespace GDRPC.App.GM
         /// <param name="mainAddres">Основной адрес откуда требуется считать (иногда их нету)</param>
         /// <param name="offests">оффсеты.</param>
         /// <returns></returns>
-        public static T Read<T>(int mainAddres, int[] offests) where T : struct => App.GameManager.Read<T>(offests, mainAddres);
-        public static T Read<T>(int[] offests) where T : struct => App.GameManager.Read<T>(offests, true);
-        public static string ReadString(int[] offests) => App.GameManager.ReadString(offests);
-        public static string ReadString(int mainAddres, int[] offests) => App.GameManager.ReadString(offests, mainAddres);
+        public static T Read<T>(int mainAddres, int[] offests) where T : struct => App.GameManager.Read<T>(App.GameProcess.MainModule, offests, mainAddres);
+        public static T Read<T>(int[] offests) where T : struct => App.GameManager.Read<T>(App.GameProcess.MainModule, offests, true);
+        public static string ReadString(int[] offests) => App.GameManager.ReadString(App.GameProcess.MainModule, offests);
+        public static string ReadString(int mainAddres, int[] offests) => App.GameManager.ReadString(App.GameProcess.MainModule, offests, mainAddres);
 
 
         /// <summary>

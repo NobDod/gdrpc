@@ -30,7 +30,6 @@ namespace GDRPC.App
         {
             Assets = new Discord.Assets
             {
-                LargeImageText = "Geometry Dash",
                 LargeImageKey = "logo",
             },
             Timestamps = new Discord.Timestamps
@@ -137,7 +136,7 @@ namespace GDRPC.App
         {
             Log.WriteLine("[GameFinder]: Finding process with name " + _im.Read("g", "processName"));
             _gp = await ProcessFinder.FindProcess(_im.Read("g", "processName"));
-            _gm = new Memory.MemoryReader(_im.Read("g", "processName") + _im.Read("g", "ext"), _gp);
+            _gm = new Memory.MemoryReader(_gp);
             defaultRpc.Timestamps.Start = DateTime.UtcNow;
             Log.WriteLine("[GameFinder]: Process finded. PID: " + _gp.Id);
         }

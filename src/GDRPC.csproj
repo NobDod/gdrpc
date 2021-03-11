@@ -59,11 +59,9 @@
     <Compile Include="App\Scenes\Editor.cs" />
     <Compile Include="App\Scenes\Level.cs" />
     <Compile Include="App\ProcessFinder.cs" />
-    <Compile Include="Memory\access.cs" />
-    <Compile Include="Memory\private.cs" />
-    <Compile Include="Memory\public.cs" />
+    <Compile Include="Memory\MemoryReader.cs" />
+    <Compile Include="Memory\MemoryAccess.cs" />
     <Compile Include="Resources\Reader.cs" />
-    <Compile Include="Utils\RandomText.cs" />
     <Compile Include="WinApi\Discord\Class.cs" />
     <Compile Include="WinApi\Discord\Control.cs" />
     <Compile Include="WinApi\Discord\Struct.cs" />
