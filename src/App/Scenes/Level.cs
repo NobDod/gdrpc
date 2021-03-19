@@ -11,7 +11,7 @@ namespace GDRPC.App
         public static async Task Run()
         {
             //wait for correct data. please, don`t remove task delay. thanks.
-            Task.Delay(250).Wait();
+            await Task.Delay(250);
 
             //level type, without scene.
             GM.LevelType type = (GM.LevelType)GM.Reader.Level.LevelType;

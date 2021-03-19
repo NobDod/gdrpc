@@ -10,6 +10,9 @@ namespace GDRPC.App
     {
         public static async Task Run()
         {
+            //wait for correct data. please, don`t remove task delay. thanks.
+            await Task.Delay(250);
+
             DateTime t = DateTime.UtcNow;
             while (GM.Reader.Editor.IsOpened)
             {
