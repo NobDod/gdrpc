@@ -52,6 +52,10 @@ namespace GDRPC.App
                 int currentPercent = GM.Reader.Level.Procent, bestPercent = GM.Reader.Level.BestProcent,
                     currentAttempts = GM.Reader.Level.Attempts;
 
+                //level not loaded.
+                if (currentPercent < 0)
+                    continue;
+
                 #region Debug Log
 #if DEBUG
                 Log.WriteLine("[Event: Level]: {0} by {1} (ID: {7}, stars: {2}, icon: {3}). Percent: {4} (total: {5}, prac total: {6})", 
