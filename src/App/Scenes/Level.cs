@@ -10,60 +10,75 @@ namespace GDRPC.App
     {
         public static async Task Run()
         {
-            GM.GameDiff.Diffs Diff;
-            string iconSet, levelName = GM.Reader.Level.LevelName, creatorName = GM.Reader.Level.CreatorName;
+            //wait for correct data. please, don`t remove task delay. thanks.
+            Task.Delay(250).Wait();
 
-            bool isDemon = GM.Reader.Level.IsDemon;
-            int levelID = GM.Reader.Level.LevelID;
-            GM.Scenes scene = (GM.Scenes)GM.Reader.SceneID;
+            //level type, without scene.
             GM.LevelType type = (GM.LevelType)GM.Reader.Level.LevelType;
-            if (scene == GM.Scenes.OFFICIAL_LEVEL)
+
+            string icon_name = "", levelName = GM.Reader.Level.LevelName,
+                   creatorName = GM.Reader.Level.CreatorName;
+            bool isDemon = GM.Reader.Level.IsDemon, isOnline = (type == GM.LevelType.ONLINE || type == GM.LevelType.SAVED);
+            int levelID = GM.Reader.Level.LevelID, levelStars = GM.Reader.Level.Stars;
+
+            //level started
+            DateTime levelStarted = DateTime.UtcNow;
+
+            //get icon
+            if (!isOnline)
             {
-                if(levelID == 0) levelID = GM.Reader.Level.Utils.LevelID;
-                iconSet = GM.GameDiff.GetName(levelID);
-                Diff = GM.GameDiff.Diffs.auto;
-                creatorName = "RobTop";
+                //if creator name is null
+                //all official level by robtop
+                if (String.IsNullOrWhiteSpace(creatorName))
+                    creatorName = "RobTop";
+
+                icon_name = GM.GameDiff.GetName(levelID);
             }
             else
             {
-                Diff = (isDemon ? GM.GameDiff.Diffs.demon : (GM.GameDiff.Diffs)GM.Reader.Level.Diff);
-                iconSet = (Diff == GM.GameDiff.Diffs.demon ? GM.GameDiff.GetName((GM.GameDiff.DiffDemons)GM.Reader.Level.DiffDemon) : GM.GameDiff.GetName(Diff));
+                //if creator name is null
                 if (String.IsNullOrWhiteSpace(creatorName))
-                    creatorName = "{NAME_NOT_PROVIDED}";
-            }
-            if (String.IsNullOrWhiteSpace(levelName))
-                levelName = "{NAME_NOT_PROVIDED}";
+                    creatorName = "{NOT_PROVIDED}";
+                //if level name is null
+                if (String.IsNullOrWhiteSpace(levelName))
+                    levelName = "{NOT_PROVIDED}";
 
-            DateTime t = DateTime.UtcNow;
+                if (isDemon) icon_name = GM.GameDiff.GetName((GM.GameDiff.DiffDemons)GM.Reader.Level.DiffDemon);
+                else icon_name = GM.GameDiff.GetName((GM.GameDiff.Diffs)GM.Reader.Level.Diff);
+            }
+
             while (GM.Reader.Level.IsOpened)
             {
-                int procent = GM.Reader.Level.Procent, totalProcent = GM.Reader.Level.BestProcent, attempts = GM.Reader.Level.Attempts,
-                    stars = GM.Reader.Level.Stars;
+                int currentPercent = GM.Reader.Level.Procent, bestPercent = GM.Reader.Level.BestProcent,
+                    currentAttempts = GM.Reader.Level.Attempts;
 
-                //ожидание загрузки уровня
-                if (procent < 0)
-                    continue;
+                #region Debug Log
 #if DEBUG
-                Log.WriteLine("[AppEvent (Level)]: Level: {0} (prac: {8}), diff: {1} ({2}), procent: {5} (p:{7}) (t:{6}), isAuto: {3}, isDemon: {4}",
-                    levelID, Diff.ToString(), iconSet, "-", isDemon.ToString(), procent, totalProcent, GM.Reader.Level.BestPracticeProcent, GM.Reader.Level.IsPracticeMode.ToString());
-                Log.WriteLine("[AppEvent (Level)]: X POS: {0}, Len: {1}, Attempts: {2}",
-                   GM.Reader.Level.Utils.XPOS, GM.Reader.Level.Utils.LenLevel, attempts);
-                Log.WriteLine("[AppEvent (Level)]: Level Name: {0} by {1}\n",
-                    levelName, creatorName);
+                Log.WriteLine("[Event: Level]: {0} by {1} (ID: {7}, stars: {2}, icon: {3}). Percent: {4} (total: {5}, prac total: {6})", 
+                    levelName, creatorName, levelStars, icon_name, currentPercent, bestPercent, GM.Reader.Level.BestPracticeProcent, levelID);
+                Log.WriteLine("[Event: Level]: X POS: {0}, Len: {1}, Attempts: {2}",
+                   GM.Reader.Level.Utils.XPOS, GM.Reader.Level.Utils.LenLevel, currentAttempts);
 #endif
-                bool isOnline = (type == GM.LevelType.SAVED || type == GM.LevelType.ONLINE);
-                Discord.RichPresence rpc = App.defaultRpc;
+                #endregion
 
+                //SET PRESENCE
+                Discord.RichPresence rpc = App.defaultRpc;
+                //set details (level name, or testing)
                 if (type == GM.LevelType.EDITOR)
-                    rpc.Details = "Testing a level";
+                    rpc.Details = "Testing an level";
                 else
-                    rpc.Details = levelName + " by " + creatorName;
-                rpc.State = "Percent: " + procent + "%, attempts: " + attempts;
-                rpc.Timestamps.Start = t;
-                rpc.Assets.SmallImageKey = iconSet;
-                rpc.Assets.SmallImageText = (isOnline ? "ID: " + levelID + ", s" : "S") + "tars: " + stars + ", best percent: " + totalProcent + "%";
+                    rpc.Details = $"{levelName} by {creatorName}";
+                //set state
+                rpc.State = $"Completed: {currentPercent}%, {currentAttempts} attempt";
+                //set small text
+                rpc.Assets.SmallImageText = (isOnline ? $"ID: {levelID}, s" : "S") + $"tars: {levelStars}, best completed: {bestPercent}%";
+                //set icons
+                rpc.Assets.SmallImageKey = icon_name;
+                rpc.Timestamps.Start = levelStarted;
+
+                //set
                 Discord.Discord.SetPresence(rpc);
-                await Task.Delay(1000);
+                await Task.Delay(100);
             }
         }
     }

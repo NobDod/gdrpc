@@ -92,19 +92,25 @@ namespace GDRPC.App
                     await Sleeping();
                     continue;
                 }
-
-                if (GM.Reader.Level.IsOpened)
-                    await AppLevel.Run();
-                else if (GM.Reader.Editor.IsOpened)
-                    await AppEditor.Run();
-                else
+                try
                 {
-                    Discord.RichPresence rpc = App.defaultRpc;
-                    rpc.Details = "In menu";
-                    Discord.Discord.SetPresence(rpc);
-                }    
-
-                await Task.Delay(500);
+                    if (GM.Reader.Level.IsOpened)
+                        await AppLevel.Run();
+                    else if (GM.Reader.Editor.IsOpened)
+                        await AppEditor.Run();
+                    else
+                    {
+                        Discord.RichPresence rpc = App.defaultRpc;
+                        rpc.Details = "In menu";
+                        Discord.Discord.SetPresence(rpc);
+                    }
+                }
+                catch
+                {
+                    Log.WriteLine("[App]: Memory Reader getted exception.");
+                }
+                
+                await Task.Delay(150);
             }
         }
 
@@ -144,8 +150,8 @@ namespace GDRPC.App
         private static async Task Sleeping()
         {
 #if DEBUG
-            Log.WriteLine("[Debug]: Debug mode setted delay to 1000");
-            await Task.Delay(1000);
+            Log.WriteLine("[Debug]: wait task: 3000");
+            await Task.Delay(3000);
 #else
             await Task.Delay(5000);
 #endif

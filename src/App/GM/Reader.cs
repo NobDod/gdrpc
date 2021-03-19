@@ -125,5 +125,6 @@ namespace GDRPC.App.GM
             /// </summary>
             public static int BlockCount => Read<int>(0x3A0, new[] { 0x003222D0, 0x168 });
         }
+
     }
 }

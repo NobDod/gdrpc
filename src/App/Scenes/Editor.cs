@@ -24,7 +24,7 @@ namespace GDRPC.App
                 rpc.Timestamps.Start = t;
                 rpc.Assets.SmallImageKey = "creator_point";
                 Discord.Discord.SetPresence(rpc);
-                await Task.Delay(1000);
+                await Task.Delay(200);
             }
         }
     }
