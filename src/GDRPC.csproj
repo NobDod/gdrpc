@@ -59,6 +59,7 @@
     <Compile Include="App\Scenes\Editor.cs" />
     <Compile Include="App\Scenes\Level.cs" />
     <Compile Include="App\ProcessFinder.cs" />
+    <Compile Include="App\Scenes\Menu.cs" />
     <Compile Include="Memory\MemoryReader.cs" />
     <Compile Include="Memory\MemoryAccess.cs" />
     <Compile Include="Resources\Reader.cs" />

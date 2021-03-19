@@ -99,11 +99,7 @@ namespace GDRPC.App
                     else if (GM.Reader.Editor.IsOpened)
                         await AppEditor.Run();
                     else
-                    {
-                        Discord.RichPresence rpc = App.defaultRpc;
-                        rpc.Details = "In menu";
-                        Discord.Discord.SetPresence(rpc);
-                    }
+                        await AppMenu.Run();
                 }
                 catch
                 {
