@@ -10,21 +10,20 @@ namespace GDRPC.App
     {
         public static async Task Run()
         {
-            GM.Scenes scene = (GM.Scenes)GM.Reader.SceneID;
             DateTime t = DateTime.UtcNow;
             while (GM.Reader.Editor.IsOpened)
             {
                 int blocks = GM.Reader.Editor.BlockCount;
 #if DEBUG
-                Log.WriteLine("[AppEvent (Editor)]: Blocks: {0}", blocks);
+                Log.WriteLine("[Event: Editor]: Blocks: {0}", blocks);
 #endif
                 Discord.RichPresence rpc = App.defaultRpc;
-                rpc.Details = "Editing level";
+                rpc.Details = "Editing an level";
                 rpc.State = "Blocks: " + blocks;
                 rpc.Timestamps.Start = t;
                 rpc.Assets.SmallImageKey = "creator_point";
                 Discord.Discord.SetPresence(rpc);
-                await Task.Delay(200);
+                await Task.Delay(100);
             }
         }
     }
