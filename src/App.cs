@@ -12,6 +12,9 @@ namespace GDRPC
         private static DateTime startApp;
         public static DateTime StartApp { get => startApp; }
 
+        //old programm directory
+        public static string oldPD;
+
         /// <summary>
         /// Run wihout console
         /// </summary>
@@ -32,6 +35,7 @@ namespace GDRPC
         {
             startApp = DateTime.UtcNow;
             //find my process folder :)
+            oldPD = Environment.CurrentDirectory;
             //by module
             ProcessModuleCollection pmc = Process.GetCurrentProcess().Modules;
             bool _ts = false;

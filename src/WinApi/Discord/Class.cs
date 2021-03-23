@@ -12,7 +12,7 @@ namespace GDRPC.Discord
         {
             if (!System.IO.File.Exists(DiscordLib.LibName))
                 AppRunner.MessageBoxFast.Error("Failed to loading GDRPC: " + DiscordLib.LibName + " not found", true);
-            /*fix bug with callback system*/
+            
             DiscordLib.EventHandlers handlers = new DiscordLib.EventHandlers();
             handlers.readyCallback += ready;
             DiscordLib.Initialize(appID, ref handlers, true, null);
