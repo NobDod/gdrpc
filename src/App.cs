@@ -31,11 +31,27 @@ namespace GDRPC
         private static void Main(string[] args)
         {
             startApp = DateTime.UtcNow;
+            //find my process folder :)
+            //by module
+            ProcessModuleCollection pmc = Process.GetCurrentProcess().Modules;
+            bool _ts = false;
+            foreach (ProcessModule pm in pmc)
+            {
+                if (pm.ModuleName.Split('.')[0].ToLower() == "gdrpc")
+                {
+                    Environment.CurrentDirectory = System.IO.Path.GetDirectoryName(pm.FileName);
+                    _ts = true;
+                    break;
+                }
+            }
+
+            if (!_ts) Environment.CurrentDirectory = System.IO.Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
 #if DEBUG
             if (!WinApi.Consoler.IsConsole())
                 WinApi.Consoler.CreateConsole(true, true);
             Console.Title = "GDRPC";
             Console.WriteLine("Geometry Dash Rich Presence");
+            Console.WriteLine("Program directory: {0} (ts: {1})", Environment.CurrentDirectory, _ts.ToString());
             Log.WriteLine("[AppRunner]: " + startApp.ToString());
             App.App.Run().Wait();
             Log.WriteLine("[AppRunner]: App has stoped. Restarting (2sec)");
