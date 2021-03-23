@@ -43,6 +43,7 @@ namespace GDRPC
             Main(args);
 #else
             App.App.Run().Wait();
+            Log.WriteLine("Goodbye :(");
 #endif
         }
 

@@ -24,6 +24,9 @@ namespace GDRPC.App
         private static Memory.MemoryReader _gm;
         public static Memory.MemoryReader GameManager { get => _gm; }
 
+        //stop v2
+        private static bool _Stopping = false;
+        public static bool HasStopped { get => _Stopping; }
 
         //default gdrpc
         public static Discord.RichPresence defaultRpc = new Discord.RichPresence
@@ -44,6 +47,8 @@ namespace GDRPC.App
         /// <returns></returns>
         public static async Task Run()
         {
+            _Stopping = false;
+
             //темп папка
             if (_tm == "")
             {
@@ -71,7 +76,7 @@ namespace GDRPC.App
             //запусk gdrpc
             while (true)
             {
-                if (_tm == "")
+                if (_Stopping || _tm == "")
                     break;
                 //если упал процесс или его вообще нет то го процесс делать
                 if (_gp == null || _gm == null || _gp.HasExited)
@@ -84,6 +89,10 @@ namespace GDRPC.App
                         await Sleeping();
                     }
                     await ProcessInitialize();
+
+                    //expection fix.
+                    if (_gm == null)
+                        break;
 
                     //дискорд унитилизирован.
                     Discord.Discord.Initialize(Config.Read("g", "appID"));
@@ -115,6 +124,7 @@ namespace GDRPC.App
         /// </summary>
         public static void Stop(bool removeDirectory=true)
         {
+            _Stopping = true;
             if (Config.IsKey("p", "_disinit"))
             {
                 Discord.Discord.Deinitialize();
@@ -138,6 +148,10 @@ namespace GDRPC.App
         {
             Log.WriteLine("[GameFinder]: Finding process with name " + _im.Read("g", "processName"));
             _gp = await ProcessFinder.FindProcess(_im.Read("g", "processName"));
+            //limt counter or if process null stop.
+            if (_gp == null)
+                return;
+
             _gm = new Memory.MemoryReader(_gp);
             defaultRpc.Timestamps.Start = DateTime.UtcNow;
             Log.WriteLine("[GameFinder]: Process finded. PID: " + _gp.Id);
