@@ -8,40 +8,63 @@ namespace GDRPC.Discord
 {
     class Discord
     {
-        public static void Initialize(string appID)
+        /// <summary>
+        /// Help function, checking file discord.
+        /// </summary>
+        public static void CheckFileDiscord()
         {
             if (!System.IO.File.Exists(DiscordLib.LibName))
-                AppRunner.MessageBoxFast.Error("Failed to loading GDRPC: " + DiscordLib.LibName + " not found", true);
-            
+                AppRunner.MessageBoxFast.Error("Failed to loading GDRPC: " + DiscordLib.LibName + " not found");
+        }
+
+        /// <summary>
+        /// Initializing discord rich presence
+        /// </summary>
+        /// <param name="appID">application id.</param>
+        public static void Initialize(ulong appID)
+        {
+            CheckFileDiscord();
             DiscordLib.EventHandlers handlers = new DiscordLib.EventHandlers();
-            handlers.readyCallback += ready;
-            DiscordLib.Initialize(appID, ref handlers, true, null);
+            handlers.readyCallback += Ready;
+            DiscordLib.Initialize(appID.ToString(), ref handlers, true, null);
             DiscordLib.RunCallbacks();
             Log.WriteLine("[DiscordRPC]: Initialized discord RPC.");
         }
 
+        /// <summary>
+        /// Set presence
+        /// </summary>
+        /// <param name="presence">presence</param>
         public static void SetPresence(RichPresence presence)
         {
-            DiscordLib.RichPresence presence2 = new DiscordLib.RichPresence();
-            presence2.largeImageKey = presence.Assets.LargeImageKey;
-            presence2.largeImageText = presence.Assets.LargeImageText;
-            presence2.smallImageKey = presence.Assets.SmallImageKey;
-            presence2.smallImageText = presence.Assets.SmallImageText;
+            CheckFileDiscord();
+            DiscordLib.RichPresence presence2 = new DiscordLib.RichPresence
+            {
+                largeImageKey = presence.Assets.LargeImageKey,
+                largeImageText = presence.Assets.LargeImageText,
+                smallImageKey = presence.Assets.SmallImageKey,
+                smallImageText = presence.Assets.SmallImageText,
 
-            //richPresence
-            presence2.partyId = presence.PartyId;
-            presence2.partyMax = presence.PartyMax;
-            presence2.partySize = presence.PartySize;
-            presence2.state = presence.State;
-            presence2.details = presence.Details;
+                //richPresence
+                partyId = presence.PartyId,
+                partyMax = presence.PartyMax,
+                partySize = presence.PartySize,
+                state = presence.State,
+                details = presence.Details,
 
-            presence2.startTimestamp = DateTimeToTimestamp(presence.Timestamps.Start);
-            presence2.endTimestamp = DateTimeToTimestamp(presence.Timestamps.End);
+                startTimestamp = DateTimeToTimestamp(presence.Timestamps.Start),
+                endTimestamp = DateTimeToTimestamp(presence.Timestamps.End)
+            };
             DiscordLib.UpdatePresence(ref presence2);
         }
 
+
+        /// <summary>
+        /// Stop discord rich presence.
+        /// </summary>
         public static void Deinitialize()
         {
+            CheckFileDiscord();
             DiscordLib.Shutdown();
             Log.WriteLine("[DiscordRPC]: discord RPC shutdowned.");
         }
@@ -53,7 +76,7 @@ namespace GDRPC.Discord
             return (dt.Ticks - 621355968000000000) / 10000000;
         }
 
-        private static void ready()
+        private static void Ready()
         {
             Log.WriteLine("[DiscordRPC]: Ready ");
         }
