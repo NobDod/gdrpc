@@ -5,6 +5,9 @@ You only call one function or use loader for GDRPC (ldr).
 ## Download for original game
 Go to [releases](https://github.com/hopixteam/gdrpc/releases)
 
+## If you compiling GDRPC.
+Please, no forget change file type (library or window program (no console)) in project settings.
+
 ## Example (for private servers)
 Recommended: use a LDR service (you just need to compile GDRPC.dll and add the files (download them from release): `libcurl.dll`,` gdrpc_cli.dll`, `gdrpc_ldr.dll` and your builded `GDRPC.dll` to game)
 ### With thread
