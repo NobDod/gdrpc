@@ -70,7 +70,7 @@ namespace GDRPC.App
                 //check config
                 Log.WriteLine("[App]: Config with temp directory initialized. Temp dir: " + _tm);
                 if (!_im.IsKey("g", "appID"))
-                    AppRunner.MessageBoxFast.Error("Failed to loading GDRPC: extracting config failed.", true);
+                    AppRunner.MessageBoxFast.Error("Failed to loading GDRPC: extracting config failed.");
             }
 
             //запусk gdrpc
@@ -95,7 +95,9 @@ namespace GDRPC.App
                         break;
 
                     //дискорд унитилизирован.
-                    Discord.Discord.Initialize(Config.Read("g", "appID"));
+                    if (!ulong.TryParse(Config.Read("g", "appID"), out ulong discordAppId))
+                        AppRunner.MessageBoxFast.Error("Failed to parsing discord application id.");
+                    Discord.Discord.Initialize(discordAppId);
                     Discord.Discord.SetPresence(defaultRpc);
                     Config.Write("p", "_disinit", "+");
                     await Sleeping();
