@@ -28,8 +28,9 @@ namespace GDRPC
         /// <param name="button"></param>
         public static void MessageBox(string title, string text, long icon, long button)
         {
-            int handle = (int)Process.GetCurrentProcess().MainWindowHandle;
-            if (handle == 0 && !WinApi.Consoler.IsConsole())
+            //don`t stopping game process.
+            int handle = 0x0;// (int)Process.GetCurrentProcess().MainWindowHandle;
+            if (!WinApi.Consoler.IsConsole())
             {
                 WinApi.Consoler.CreateConsole(false, false);
                 handle = (int)WinApi.Consoler.GetConsoleWindow();
@@ -38,12 +39,18 @@ namespace GDRPC
             if (handle == (int)WinApi.Consoler.GetConsoleWindow() && !WinApi.Consoler.IsConsole())
                 WinApi.Consoler.CloseConsole();
         }
+
+        /// <summary>
+        /// Fatal error GDRPC. Don`t use this class.
+        /// </summary>
         public class MessageBoxFast
         {
             public static void Error(string text)
             {
+                //go use restart :)
+                Stop();
                 MessageBox("GDRPC", text, MB.Icon.Error, MB.Buttons.Ok);
-                Environment.Exit(5);
+                Run();
                 return;
             }
         }

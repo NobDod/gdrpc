@@ -119,27 +119,29 @@ namespace GDRPC.App
                 
                 await Task.Delay(150);
             }
+
+            Stop();
         }
 
         /// <summary>
         /// Stop GDRPC
         /// </summary>
-        public static void Stop(bool removeDirectory=true)
+        public static void Stop()
         {
             _Stopping = true;
-            if (Config.IsKey("p", "_disinit"))
+            if (_tm != "" && _im != null)
             {
-                Discord.Discord.Deinitialize();
-                Config.RemoveKey("p", "_disinit");
+                if (Config.IsKey("p", "_disinit"))
+                {
+                    try { Discord.Discord.Deinitialize(); } catch { }
+                    Config.RemoveKey("p", "_disinit");
+                }
+                string tmPa = System.IO.Path.GetTempPath() + "\\HopixTeam\\GDRPC";
+                try { if (System.IO.Directory.Exists(tmPa)) System.IO.Directory.Delete(tmPa, true); } catch { }
             }
-            string tmPa = System.IO.Path.GetTempPath() + "\\HopixTeam\\GDRPC";
-            if (System.IO.Directory.Exists(tmPa) && removeDirectory)
-                System.IO.Directory.Delete(tmPa, true);
-            if (!removeDirectory)
-            {
-                _tm = "";
-                _im = null;
-            }
+
+            _tm = "";
+            _im = null;
             _gp = null;
             _gm = null;
             Log.WriteLine("[App]: Stopped");

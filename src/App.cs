@@ -24,7 +24,7 @@ namespace GDRPC
         /// Stop wihout console
         /// </summary>
         public static void Stop() {
-            App.App.Stop();
+            try { App.App.Stop(); } catch { }
         }
 
         /// <summary>
@@ -48,7 +48,7 @@ namespace GDRPC
             Console.WriteLine("Geometry Dash Rich Presence");
             Console.WriteLine("Program directory: {0}", Environment.CurrentDirectory);
             Log.WriteLine("[AppRunner]: " + startApp.ToString());
-            App.App.Run().Wait();
+            _run();
             Log.WriteLine("[AppRunner]: App has stoped. Restarting (2sec)");
             Task.Delay(2000).Wait();
             Main(args);
@@ -56,6 +56,27 @@ namespace GDRPC
             App.App.Run().Wait();
             Log.WriteLine("Goodbye :(");
 #endif
+        }
+
+        /// <summary>
+        /// easly function for run. don`t please remove.
+        /// </summary>
+        private static void _run()
+        {
+            try
+            {
+                App.App.Run().Wait();
+            }
+            catch(Exception ex)
+            {
+                Log.WriteLine("[Exception]: " + ex.Message);
+#if DEBUG
+                Debug.WriteLine(ex.StackTrace);
+#endif
+                Stop();
+                Log.WriteLine("Delaying 3 seconds");
+                Task.Delay(3000).Wait();
+            }
         }
     }
 }
