@@ -37,7 +37,6 @@ namespace GDRPC.Discord
         /// <param name="presence">presence</param>
         public static void SetPresence(RichPresence presence)
         {
-            CheckFileDiscord();
             DiscordLib.RichPresence presence2 = new DiscordLib.RichPresence
             {
                 largeImageKey = presence.Assets.LargeImageKey,
@@ -64,7 +63,6 @@ namespace GDRPC.Discord
         /// </summary>
         public static void Deinitialize()
         {
-            CheckFileDiscord();
             DiscordLib.Shutdown();
             Log.WriteLine("[DiscordRPC]: discord RPC shutdowned.");
         }
