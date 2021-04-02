@@ -28,6 +28,10 @@ namespace GDRPC.App
         private static bool _Stopping = false;
         public static bool HasStopped { get => _Stopping; }
 
+        //is game loaded
+        private static bool _gameLoaded = false;
+        public static bool GameLoaded { get => _gameLoaded; }
+
         //default gdrpc
         public static Discord.RichPresence defaultRpc = new Discord.RichPresence
         {
@@ -81,6 +85,7 @@ namespace GDRPC.App
                 //если упал процесс или его вообще нет то го процесс делать
                 if (_gp == null || _gm == null || _gp.HasExited)
                 {
+                    _gameLoaded = false;
                     //дискорд был унитилизирован?
                     if (Config.IsKey("p", "_disinit"))
                     {
@@ -91,7 +96,7 @@ namespace GDRPC.App
                     await ProcessInitialize();
 
                     //expection fix.
-                    if (_gm == null)
+                    if (_gp == null)
                         break;
 
                     //дискорд унитилизирован.
@@ -101,6 +106,9 @@ namespace GDRPC.App
                     Discord.Discord.SetPresence(defaultRpc);
                     Config.Write("p", "_disinit", "+");
                     await Sleeping();
+
+                    //game loaded
+                    _gameLoaded = true;
                     continue;
                 }
                 try
@@ -128,6 +136,7 @@ namespace GDRPC.App
         /// </summary>
         public static void Stop()
         {
+            _gameLoaded = false;
             _Stopping = true;
             if (_tm != "" && _im != null)
             {

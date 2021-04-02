@@ -29,7 +29,8 @@ namespace GDRPC
         public static void MessageBox(string title, string text, long icon, long button)
         {
             //don`t stopping game process.
-            int handle = 0x0;// (int)Process.GetCurrentProcess().MainWindowHandle;
+            int handle = 0;
+
             if (!WinApi.Consoler.IsConsole())
             {
                 WinApi.Consoler.CreateConsole(false, false);
