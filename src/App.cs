@@ -50,8 +50,8 @@ namespace GDRPC
             try
             {
                 //checking content
-                Discord.Discord.CheckFileDiscord();
-                App.App.Run().Wait();
+                if (Discord.Discord.CheckFileDiscord())
+                    App.App.Run().Wait();
             }
             catch (Exception ex)
             {

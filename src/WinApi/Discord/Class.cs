@@ -11,10 +11,9 @@ namespace GDRPC.Discord
         /// <summary>
         /// Help function, checking file discord.
         /// </summary>
-        public static void CheckFileDiscord()
+        public static bool CheckFileDiscord()
         {
-            if (!System.IO.File.Exists(DiscordLib.LibName))
-                AppRunner.MessageBoxFast.Error("Failed to loading GDRPC: " + DiscordLib.LibName + " not found");
+            return System.IO.File.Exists(DiscordLib.LibName);
         }
 
         /// <summary>
@@ -23,7 +22,8 @@ namespace GDRPC.Discord
         /// <param name="appID">application id.</param>
         public static void Initialize(ulong appID)
         {
-            CheckFileDiscord();
+            if (!CheckFileDiscord())
+                return;
             DiscordLib.EventHandlers handlers = new DiscordLib.EventHandlers();
             handlers.readyCallback += Ready;
             DiscordLib.Initialize(appID.ToString(), ref handlers, true, null);
