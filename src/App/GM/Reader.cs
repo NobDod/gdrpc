@@ -31,7 +31,7 @@ namespace GDRPC.App.GM
             public class Utils
             {
                 //господи, XPOS = , 30 минут фиксил баг класс
-                public static float XPOS => Read<float>(0x67C, new int[] { 0x003222D0, 0x164, 0x224, 0x4E8, 0xB4 });
+                public static float XPOS => Read<float>(0x34, new int[] { 0x3222D0, 0x164, 0x224 });
                 public static float LenLevel => Read<float>(0x3B4, new int[] { 0x003222D0, 0x164 });
                 public static int LevelID => Read<int>(0x2A0, new[] { 0x003222D0 });
             }
@@ -75,8 +75,23 @@ namespace GDRPC.App.GM
             /// Текущие проценты 
             /// </summary>
             //public static int Procent => Read<int>(0x450, new[] { 0x003222D0, 0x164, 0x22C, 0x114 });
-            public static int Procent => (int)(Utils.XPOS / Utils.LenLevel * 100);
-
+            public static int Procent
+            {
+                get 
+                {
+                    try
+                    {
+                        int value = (int)(Utils.XPOS / Utils.LenLevel * 100);
+                        if (value < 100)
+                            return value;
+                        return 100;
+                    }
+                    catch
+                    {
+                        return 0;
+                    }
+                }
+            }
             /// <summary>
             /// Diff: авто уровень?
             /// </summary>
