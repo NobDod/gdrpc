@@ -172,7 +172,7 @@ namespace GDRPC.App
             if (_gp == null)
                 return;
 
-            _gm = new Memory.MemoryReader(_gp);
+            _gm = Memory.MemoryReader.Create(_gp, Memory.MemoryAccess.PROCESS_VM_OPERATION, Memory.MemoryAccess.PROCESS_VM_WRITE, Memory.MemoryAccess.PROCESS_VM_READ);
             defaultRpc.Timestamps.Start = DateTime.UtcNow;
             Log.WriteLine("[GameFinder]: Process finded. PID: " + _gp.Id);
         }

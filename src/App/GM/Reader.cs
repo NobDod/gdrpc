@@ -8,74 +8,61 @@ namespace GDRPC.App.GM
 {
     class Reader
     {
+        public static Memory.MemoryReader gm { get => App.GameManager; }
         /// <summary>
-        /// Чтение памяти с GM (GameManager) функции. Облегченная версия.
+        /// ID scene. 
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="mainAddres">Основной адрес откуда требуется считать (иногда их нету)</param>
-        /// <param name="offests">оффсеты.</param>
-        /// <returns></returns>
-        public static T Read<T>(int mainAddres, int[] offests) where T : struct => App.HasStopped ? default : App.GameManager.Read<T>(App.GameProcess.MainModule, offests, mainAddres);
-        public static T Read<T>(int[] offests) where T : struct => App.HasStopped ? default : App.GameManager.Read<T>(App.GameProcess.MainModule, offests, true);
-        public static string ReadString(int[] offests) => App.HasStopped ? "" : App.GameManager.ReadString(App.GameProcess.MainModule, offests);
-        public static string ReadString(int mainAddres, int[] offests) => App.HasStopped ? "" : App.GameManager.ReadString(App.GameProcess.MainModule, offests, mainAddres);
-
-
-        /// <summary>
-        /// ID сцен. 
-        /// </summary>
-        public static int SceneID => Read<int>(0x1DC, new[] { 0x3222D0 });
+        public static int SceneID => gm.Read<int>(0x3222D0, 0x1DC);
         
         public class Level
         {
             public class Utils
             {
                 //господи, XPOS = , 30 минут фиксил баг класс
-                public static float XPOS => Read<float>(0x34, new int[] { 0x3222D0, 0x164, 0x224 });
-                public static float LenLevel => Read<float>(0x3B4, new int[] { 0x003222D0, 0x164 });
-                public static int LevelID => Read<int>(0x2A0, new[] { 0x003222D0 });
+                public static float XPOS => gm.Read<float>(0x3222D0, 0x164, 0x224, 0x34);
+                public static float LenLevel => gm.Read<float>(0x3222D0, 0x164, 0x3B4);
+                public static int LevelID => gm.Read<int>(0x3222D0, 0x2A0);
             }
 
             /// <summary>
-            /// Открыт ли уровень?
+            /// is opened level?
             /// </summary>
-            public static bool IsOpened => Read<bool>(new[] { 0x003222D0, 0x164, 0x22C, 0x114 });
+            public static bool IsOpened => gm.Read<bool>(0x3222D0, 0x164, 0x22C, 0x114);
 
             /// <summary>
-            /// Уровень запущен в практик режиме
+            /// is activated practice mode? (not working)
             /// </summary>
-            public static bool IsPracticeMode => Read<bool>(0x495, new[] { 0x003222D0, 0x164 });
+            public static bool IsPracticeMode => gm.Read<bool>(0x3222D0, 0x164, 0x495);
 
             /// <summary>
-            /// ID уровня
+            /// level ID
             /// </summary>
-            public static int LevelID => Read<int>(0xF8, new[] { 0x003222D0, 0x164, 0x22C, 0x114 });
+            public static int LevelID => gm.Read<int>(0x3222D0, 0x164, 0x22C, 0x114, 0xF8);
 
             /// <summary>
-            /// Количество звезд в уровне
+            /// stars in level
             /// </summary>
-            public static int Stars => Read<int>(0x2AC, new[] { 0x003222D0, 0x164, 0x22C, 0x114 });
+            public static int Stars => gm.Read<int>(0x3222D0, 0x164, 0x22C, 0x114, 0x2AC);
 
             /// <summary>
-            /// Попытки (не всего в уровне)
+            /// attempts
             /// </summary>
-            public static int Attempts => Read<int>(0x4A8, new[] { 0x003222D0, 0x164 });
+            public static int Attempts => gm.Read<int>(0x3222D0, 0x164, 0x4A8);
 
             /// <summary>
-            /// Количество процентов пройденого уровня
+            /// best percent
             /// </summary>
-            public static int BestProcent => Read<int>(0x248, new[] { 0x003222D0, 0x164, 0x22C, 0x114 });
+            public static int BestPercent => gm.Read<int>(0x3222D0, 0x164, 0x22C, 0x114, 0x248);
 
             /// <summary>
-            /// Количество практичных процентов пройденого уровня
+            /// best practice percent
             /// </summary>
-            public static int BestPracticeProcent => Read<int>(0x26C, new[] { 0x003222D0, 0x164, 0x22C, 0x114 });
+            public static int BestPracticePercent => gm.Read<int>(0x3222D0, 0x164, 0x22C, 0x114, 0x26C);
 
             /// <summary>
-            /// Текущие проценты 
+            /// percent in level
             /// </summary>
-            //public static int Procent => Read<int>(0x450, new[] { 0x003222D0, 0x164, 0x22C, 0x114 });
-            public static int Procent
+            public static int Percent
             {
                 get 
                 {
@@ -93,52 +80,52 @@ namespace GDRPC.App.GM
                 }
             }
             /// <summary>
-            /// Diff: авто уровень?
+            /// is auto level?
             /// </summary>
-            public static bool IsAuto => Read<bool>(0x2B0, new[] { 0x003222D0, 0x164, 0x22C, 0x114 });
+            public static bool IsAuto => gm.Read<bool>(0x3222D0, 0x164, 0x22C, 0x114, 0x2B0);
 
             /// <summary>
-            /// Diff: демон уровень?
+            /// is demon level?
             /// </summary>
-            public static bool IsDemon => Read<bool>(0x29C, new[] { 0x003222D0, 0x164, 0x22C, 0x114 });
+            public static bool IsDemon => gm.Read<bool>(0x3222D0, 0x164, 0x22C, 0x114, 0x29C);
 
             /// <summary>
             /// Diff
             /// </summary>
-            public static int Diff => Read<int>(0x1E4, new[] { 0x003222D0, 0x164, 0x22C, 0x114 });
+            public static int Diff => gm.Read<int>(0x3222D0, 0x164, 0x22C, 0x114, 0x1E4);
 
             /// <summary>
             /// Diff Demon
             /// </summary>
-            public static int DiffDemon => Read<int>(0x2A0, new[] { 0x003222D0, 0x164, 0x22C, 0x114 });
+            public static int DiffDemon => gm.Read<int>(0x3222D0, 0x164, 0x22C, 0x114, 0x2A0);
 
             /// <summary>
-            /// тип уровня
+            /// level type
             /// </summary>
-            public static int LevelType => Read<int>(0x364, new[] { 0x003222D0, 0x164, 0x22C, 0x114 });
+            public static int LevelType => gm.Read<int>(0x3222D0, 0x164, 0x22C, 0x114, 0x364);
 
             /// <summary>
-            /// Название уровня
+            /// level name
             /// </summary>
-            public static string LevelName => ReadString(0xFC, new int[] { 0x3222D0, 0x164, 0x22C, 0x114 });
+            public static string LevelName => gm.ReadString(0x3222D0, 0x164, 0x22C, 0x114, 0xFC);
 
             /// <summary>
-            /// Уровень был создан
+            /// creator name
             /// </summary>
-            public static string CreatorName => ReadString(0x144, new int[] { 0x3222D0, 0x164, 0x22C, 0x114 });
+            public static string CreatorName => gm.ReadString(0x3222D0, 0x164, 0x22C, 0x114, 0x144);
         }
 
         public class Editor
         {
             /// <summary>
-            /// Открыт ли редактор?
+            /// is opened editor?
             /// </summary>
-            public static bool IsOpened => Read<bool>(new[] { 0x003222D0, 0x168 });
+            public static bool IsOpened => gm.Read<bool>(0x3222D0, 0x168);
 
             /// <summary>
-            /// Количество блоков
+            /// block count
             /// </summary>
-            public static int BlockCount => Read<int>(0x3A0, new[] { 0x003222D0, 0x168 });
+            public static int BlockCount => gm.Read<int>(0x3222D0, 0x168, 0x3A0);
         }
 
     }

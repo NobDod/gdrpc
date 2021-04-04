@@ -60,6 +60,9 @@
     <Compile Include="App\Scenes\Level.cs" />
     <Compile Include="App\ProcessFinder.cs" />
     <Compile Include="App\Scenes\Menu.cs" />
+    <Compile Include="Memory\Core\Converter.cs" />
+    <Compile Include="Memory\Core\ImportLibrary.cs" />
+    <Compile Include="Memory\Core\ProcessData.cs" />
     <Compile Include="Memory\MemoryReader.cs" />
     <Compile Include="Memory\MemoryAccess.cs" />
     <Compile Include="Resources\Reader.cs" />
@@ -70,7 +73,6 @@
     <Compile Include="WinApi\Consoler.cs" />
     <Compile Include="WinApi\IniManager.cs" />
     <Compile Include="WinApi\Internet.cs" />
-    <Compile Include="WinApi\MessageBox.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

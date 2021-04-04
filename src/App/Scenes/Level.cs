@@ -49,7 +49,7 @@ namespace GDRPC.App
 
             while (GM.Reader.Level.IsOpened)
             {
-                int currentPercent = GM.Reader.Level.Procent, bestPercent = GM.Reader.Level.BestProcent,
+                int currentPercent = GM.Reader.Level.Percent, bestPercent = GM.Reader.Level.BestPercent,
                     currentAttempts = GM.Reader.Level.Attempts;
 
                 //level not loaded.
@@ -59,7 +59,7 @@ namespace GDRPC.App
                 #region Debug Log
 #if DEBUG
                 Log.WriteLine("[Event: Level]: {0} by {1} (ID: {7}, stars: {2}, icon: {3}). Percent: {4} (total: {5}, prac total: {6})", 
-                    levelName, creatorName, levelStars, icon_name, currentPercent, bestPercent, GM.Reader.Level.BestPracticeProcent, levelID);
+                    levelName, creatorName, levelStars, icon_name, currentPercent, bestPercent, GM.Reader.Level.BestPracticePercent, levelID);
                 Log.WriteLine("[Event: Level]: X POS: {0}, Len: {1}, Attempts: {2}",
                    GM.Reader.Level.Utils.XPOS, GM.Reader.Level.Utils.LenLevel, currentAttempts);
 #endif

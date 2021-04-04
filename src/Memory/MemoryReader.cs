@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace GDRPC.Memory
 {
@@ -15,180 +15,130 @@ namespace GDRPC.Memory
     /// </summary>
     public class MemoryReader
     {
-        class Library
-        {
-            public const int WIN_ADDRESS = 0x10;
-            public static IntPtr GetModuleAddress(Process process, string moduleFullName)
-            {
-                foreach (ProcessModule module in process.Modules)
-                {
-                    if (moduleFullName == module.ModuleName)
-                        return module.BaseAddress;
-                }
-                return (IntPtr)(-1);
-            }
-
-            public static bool GetProcess(string processName, out Process process)
-            {
-                Process[] processes = Process.GetProcessesByName(processName);
-                if (processes.Length > 0)
-                    process = Process.GetProcessesByName(processName)[0];
-                else
-                    process = null;
-                return (process == null);
-            }
-
-            [DllImport("kernel32.dll")]
-            public static extern IntPtr OpenProcess(int dwDesiredAccess, bool bInheritHandle, int dwProcessId);
-
-            [DllImport("kernel32.dll")]
-            public static extern bool ReadProcessMemory(int hProcess, int lpBaseAddress, byte[] buffer, int size, ref int lpNumberOfBytesRead);
-
-            [DllImport("kernel32.dll")]
-            public static extern bool WriteProcessMemory(int hProcess, int lpBaseAddress, byte[] buffer, int size, out int lpNumberOfBytesWritten);
-        }
-
-        class BytesConvert
-        {
-            public static T BytesToStructure<T>(byte[] bytes) where T : struct
-            {
-                GCHandle handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
-                try
-                {
-                    return (T)Marshal.PtrToStructure(handle.AddrOfPinnedObject(), typeof(T));
-                }
-                finally
-                {
-                    handle.Free();
-                }
-            }
-            public static byte[] StructureToBytes(object value)
-            {
-                int size = Marshal.SizeOf(value);
-                byte[] array = new byte[size];
-                IntPtr ptr = Marshal.AllocHGlobal(size);
-                Marshal.StructureToPtr(value, ptr, true);
-                Marshal.Copy(ptr, array, 0, size);
-                Marshal.FreeHGlobal(ptr);
-                return array;
-            }
-        }
-
-        private readonly int[] bytes = new int[2];
-        private readonly Process process;
-        private IntPtr handle;
-        private readonly int access = AppAccess.PROCESS_VM_READ | AppAccess.PROCESS_VM_WRITE | AppAccess.PROCESS_VM_OPERATION;
-
-        #region Public read
         /// <summary>
-        /// Байтов было прочитано.
+        /// Create with process name.
         /// </summary>
-        public int BytesRead { get => bytes[0]; }
+        /// <param name="processName">Process name</param>
+        /// <param name="access">Access list for application. Example read memory, write memory.</param>
+        /// <returns>MemoryReader. If null, process not found.</returns>
+        public static MemoryReader Create(string processName, params MemoryAccess[] access) => Create(Core.ProcessData.getProcess(processName), access);
 
         /// <summary>
-        /// Байтов было записано.
+        /// Create with process id.
         /// </summary>
-        public int BytesWrited { get => bytes[1]; }
+        /// <param name="processId">Process id</param>
+        /// <param name="access">Access list for application. Example read memory, write memory.</param>
+        /// <returns>MemoryReader. If null, process not found.</returns>
+        public static MemoryReader Create(int processId, params MemoryAccess[] access) => Create(Core.ProcessData.getProcess(processId), access);
 
         /// <summary>
-        /// Процесс игры
+        /// Create with process source.
         /// </summary>
-        public Process GameProcess { get => process; }
+        /// <param name="process">Process source.</param>
+        /// <param name="access">Access list for application. Example read memory, write memory.</param>
+        /// <returns>MemoryReader. If null, process not found.</returns>
+        public static MemoryReader Create(Process process, params MemoryAccess[] access)
+        {
+            //access not be null
+            if (access == null || access.Count() < 1)
+                throw new ArgumentNullException("access");
+            if (process == null || process.HasExited)
+                return null;
+
+            //create process
+            IntPtr ph = Core.ImportLibrary.OpenProcess((int)MemoryAccessConverter.EnumToLong(access), false, process.Id);
+
+            //handle consturct
+            int i = (int)MemoryAccessConverter.EnumToLong(access);
+            return new MemoryReader(process.ProcessName + ".exe", process, ph);
+        }
+
+        //construct
+        private IntPtr _processHandler;
+        private Process _process;
+        private string _mainModuleName;
+        private int[] _bytesSystem;
+        //base
+        public Process Process { get => _process; }
+        /// <summary>
+        ///	process
+        /// </summary>
+        public IntPtr ProcessHandler { get => _processHandler; }
+        /// <summary>
+        ///	process handler address
+        /// </summary>
+        public string ProcessMainModuleName { get => _mainModuleName; }
+        /// <summary>
+        ///	Last bytes readed
+        /// </summary>
+        public int BytesReaded { get => _bytesSystem[0]; }
+        /// <summary>
+        ///	Last bytes writed
+        /// </summary>
+        public int BytesWrited { get => _bytesSystem[1]; }
 
         /// <summary>
-        /// Адрес для чтения или записи процесса.
+        /// Initialize memory reader
         /// </summary>
-        public IntPtr GameHandleProcess { get => handle; }
-        #endregion
-
-        #region Inititlizer
-        public MemoryReader(Process process)
+        /// <param name="mmn">main module name</param>
+        /// <param name="process">get process</param>
+        /// <param name="op">open process</param>
+        public MemoryReader(string mmn, Process process, IntPtr op)
         {
-            this.process = process;
-            Init(process);
+            this._process = process;
+            this._processHandler = op;
+            this._mainModuleName = mmn;
+            this._bytesSystem = new int[2];
         }
 
-        public MemoryReader(Process process, int access)
+        #region Converter
+        /// <summary>
+        /// Convert offests to int ptr.
+        /// </summary>
+        /// <param name="offsets">addresss</param>
+        /// <param name="baseAddress">if -1, we a automatic find base address in main module :)</param>
+        /// <param name="useReader">recomended true, for good getting full address :)</param>
+        /// <returns>new IntPtr</returns>
+        public IntPtr ConvertLayers(int[] offsets, IntPtr baseAddress)
         {
-            this.process = process;
-            this.access = access;
-            Init(process);
-        }
-
-        public MemoryReader(string processName)
-        {
-            while (!Library.GetProcess(processName, out this.process)) Task.Delay(500).ConfigureAwait(false);
-            Init(process);
-        }
-
-        public MemoryReader(string processName, int access)
-        {
-            while (!Library.GetProcess(processName, out this.process)) Task.Delay(500).ConfigureAwait(false);
-            this.access = access;
-            Init(process);
-        }
-
-        private void Init(Process process)
-        {
-            handle = Library.OpenProcess(this.access, false, process.Id);
+            IntPtr result = IntPtr.Add(baseAddress, offsets[0]);
+            for (int i = 1; i < offsets.Count(); i++) result = IntPtr.Add(this.Read<IntPtr>(result.ToInt64()), offsets[i]);
+            return result;
         }
         #endregion
 
-        #region Base
-        public ProcessModule GetModule(string moduleFullName)
-        {
-            foreach (ProcessModule module in process.Modules)
-            {
-                if (moduleFullName == module.ModuleName)
-                    return module;
-            }
-            return null;
-        }
-        #endregion
-
-        #region Reader
+        #region Reading
         /// <summary>
-        /// Прочитать адрес
+        /// Reading address
         /// </summary>
-        /// <typeparam name="T">тип адреса, в котором как раз будет вернут результат.</typeparam>
-        /// <param name="address">адрес</param>
-        /// <returns></returns>
+        /// <param name="address">address</param>
+        /// <returns>T</returns>
         public T Read<T>(long address) where T : struct
         {
             try
             {
                 byte[] buffer = new byte[Marshal.SizeOf(typeof(T))];
-                Library.ReadProcessMemory((int)this.handle, (int)address, buffer, buffer.Length, ref this.bytes[0]);
-                return BytesConvert.BytesToStructure<T>(buffer);
+                Core.ImportLibrary.ReadProcessMemory((int)this._processHandler, (int)address, buffer, buffer.Length, ref this._bytesSystem[0]);
+                return Core.Converter.BytesToStructure<T>(buffer);
             }
-            catch
-            {
-                return default;
-            }
+            catch { return default; }
         }
 
         /// <summary>
-        /// Прочитать адреса через оффсеты. Является хорошим вариантом для чтение нескольких адресов, где просто так их не сложить. 
-        /// Минус этого может быть только нагрузка на систему (но не факт)
+        /// Reading address
         /// </summary>
-        /// <typeparam name="T">тип адреса, в котором как раз будет вернут результат.</typeparam>
-        /// <param name="addresss">оффсет адреса</param>
-        /// <param name="twoReader">Вы можете указать вместо IntPtr (и повторно прочитать) эту переменную на правда, и всё! Мы за вас это сделаем!</param>
-        /// <returns></returns>
-        public T Read<T>(ProcessModule module, int[] addresss, bool twoReader = false) where T : struct
+        /// <typeparam name="T"></typeparam>
+        /// <param name="module">process module</param>
+        /// <param name="offests">offests</param>
+        /// <param name="normalReader">if true, you will not need to read it twice, we will do it and return the full value, not the address. </param>
+        /// <returns>result. if bad, returned a default result.</returns>
+        public T Read<T>(ProcessModule module, params int[] offests) where T : struct
         {
             try
             {
-                //да да да, оптимизированная версия, а не тысячи IntPtr[]:)
-                //получаем основной адрес
-                IntPtr addressToRead = IntPtr.Add(module.BaseAddress, addresss[0]);
-                //если есть еще оффесты, добавляем их.
-                for (int i = 1; i < addresss.Count(); i++)
-                    addressToRead = IntPtr.Add(this.Read<IntPtr>(addressToRead.ToInt64()), addresss[i]);
-                //последнее чтение
-                if (!twoReader)
-                    return this.Read<T>(addressToRead.ToInt64());
-                return this.Read<T>(this.Read<IntPtr>(addressToRead.ToInt64()).ToInt64());
+                IntPtr address = this.ConvertLayers(offests, module.BaseAddress);
+                System.Diagnostics.Debug.WriteLine(address.ToInt64());
+                return this.Read<T>(address.ToInt64());
             }
             catch
             {
@@ -196,116 +146,94 @@ namespace GDRPC.Memory
             }
         }
 
+
         /// <summary>
-        /// Сразу добавляем адрес для чтение (поскольку для некоторых оффестов надо получить для начало IntPtr а потом повторно его прочитать уже в другом типе)
-        /// Вот пример. Зачем вам надо "прочитать(ptr.add(прочитать(модуль)..." 
+        /// Reading address
         /// </summary>
-        /// <typeparam name="T">тип адреса, в котором как раз будет вернут результат.</typeparam>
-        /// <param name="address">оффсет адреса</param>
-        /// <param name="lastAddress">последний адрес который надо прочитать</param>
-        /// <param name="twoReader">Вы можете указать вместо IntPtr (и повторно прочитать) эту переменную на правда, и всё! Мы за вас это сделаем!</param>
-        /// <returns></returns>
-        public T Read<T>(ProcessModule module, int[] address, int lastAddress) where T : struct
-            => this.Read<T>(IntPtr.Add(this.Read<IntPtr>(module, address, false), lastAddress).ToInt64());
-        
+        /// <typeparam name="T"></typeparam>
+        /// <param name="offests">offests</param>
+        /// <returns>result. if bad, returned a default result.</returns>
+        public T Read<T>(params int[] offests) where T : struct => this.Read<T>(Core.ProcessData.GetModule(this._process, this._mainModuleName), offests);
+
         /// <summary>
-        /// Прочитать память и вернуть значение. 
+        /// Reading address and return string.
         /// </summary>
-        /// <param name="address">адрес</param>
-        /// <param name="len">длина</param>
-        /// <returns></returns>
+        /// <param name="address">address</param>
+        /// <param name="len">length of string</param>
+        /// <returns>if null, failed to reading :)</returns>
         public string ReadString(long address, int len)
         {
-            byte[] bytes = new byte[len];
-            Library.ReadProcessMemory((int)this.handle, (int)address, bytes, bytes.Length, ref this.bytes[0]);
-            return System.Text.Encoding.ASCII.GetString(bytes).Replace("\0", string.Empty);
+            try
+            {
+                byte[] bytes = new byte[len];
+                Core.ImportLibrary.ReadProcessMemory((int)this._processHandler, (int)address, bytes, bytes.Length, ref this._bytesSystem[0]);
+                return System.Text.Encoding.ASCII.GetString(bytes).Replace("\0", string.Empty);
+            }
+            catch { return null; }
         }
 
         /// <summary>
-        /// Прочитать память через адреса. В случае исключения, будет вернут пустой ответ ("")
-        /// Встроен автоматический подсчёт длины текста.
+        /// Reading address and return string.
         /// </summary>
-        /// <param name="addresss">оффсет адреса</param>
-        /// <returns></returns>
-        public string ReadString(ProcessModule module, int[] addresss)
+        /// <param name="offests">offests</param>
+        /// <param name="module">process module</param>
+        /// <returns>if null, failed to reading :)</returns>
+        public string ReadString(ProcessModule module, params int[] offests)
         {
             try
             {
-                IntPtr memoryToRead = this.Read<IntPtr>(module, addresss, false);
-                int size_memoryToRead = this.Read<int>(IntPtr.Add(memoryToRead, Library.WIN_ADDRESS).ToInt64());
-                if (size_memoryToRead < Library.WIN_ADDRESS)
-                    return this.ReadString(memoryToRead.ToInt64(), size_memoryToRead);
-                memoryToRead = this.Read<IntPtr>(memoryToRead.ToInt64());
-                return this.ReadString(memoryToRead.ToInt64(), size_memoryToRead);
+                IntPtr address = this.ConvertLayers(offests, module.BaseAddress);
+                int len = this.Read<int>(IntPtr.Add(address, (int)MemoryEnumHelper.WIN_LEN_MEM_STRING_DATA).ToInt64());
+                return this.ReadString(address.ToInt64(), len);
             }
             catch
             {
-                return "";
+                return null;
             }
         }
+
 
         /// <summary>
-        /// Прочитать память через адреса в котором еще требуется дополнительное чтение. В случае исключения, будет вернут пустой ответ ("")
-        /// Встроен автоматический подсчёт длины текста.
+        /// Reading address and return string.
         /// </summary>
-        /// <param name="addresss">оффсет адреса</param>
-        /// <param name="lastAddress">последний адрес который надо прочитать</param>
-        /// <returns></returns>
-        public string ReadString(ProcessModule module, int[] addresss, int lastAddress)
-        {
-            try
-            {
-                IntPtr memoryToRead = IntPtr.Add(this.Read<IntPtr>(module, addresss, false), lastAddress);
-                int size_memoryToRead = this.Read<int>(IntPtr.Add(memoryToRead, Library.WIN_ADDRESS).ToInt64());
-                if (size_memoryToRead < Library.WIN_ADDRESS)
-                    return this.ReadString(memoryToRead.ToInt64(), size_memoryToRead);
-                memoryToRead = this.Read<IntPtr>(memoryToRead.ToInt64());
-                return this.ReadString(memoryToRead.ToInt64(), size_memoryToRead);
-
-            }
-            catch
-            {
-                return "";
-            }
-        }
+        /// <param name="offests">offests</param>
+        /// <returns>if null, failed to reading :)</returns>
+        public string ReadString(params int[] offests) => this.ReadString(Core.ProcessData.GetModule(this._process, this._mainModuleName), offests);
         #endregion
 
         #region Write
         /// <summary>
-        /// Запись в память игры.
+        /// Write to memory.
         /// </summary>
-        /// <typeparam name="T">тип, который нужен для записи</typeparam>
-        /// <param name="address">адрес</param>
-        /// <param name="value">значение</param>
+        /// <typeparam name="T">type to write</typeparam>
+        /// <param name="address">address</param>
+        /// <param name="value">value</param>
         public void Write<T>(long address, T value)
         {
-            byte[] buffer = BytesConvert.StructureToBytes(value);
-            Library.WriteProcessMemory((int)this.handle, (int)address, buffer, buffer.Length, out this.bytes[1]);
+            try
+            {
+                byte[] buffer = Core.Converter.StructureToBytes(value);
+                Core.ImportLibrary.WriteProcessMemory((int)this._processHandler, (int)address, buffer, buffer.Length, out this._bytesSystem[1]);
+            }
+            catch { }
         }
 
         /// <summary>
-        /// Запись в память игры, в виде как чтение. Рекомендуем задействовать эту функцию, оно само посчитает адрес за вас!
-        /// Если у вас не работает, попробуйте обычную версию, или версию с расчётом последнего адреса.
+        /// Write to memory
         /// </summary>
-        /// <typeparam name="T">тип, который нужен для записи</typeparam>
-        /// <param name="addresss">адреса</param>
-        /// <param name="value">значение</param>
-        public void Write<T>(ProcessModule module, int[] addresss, T value)
-        {
-            this.Write(this.Read<IntPtr>(module, addresss, false).ToInt64(), value);
-            Console.WriteLine("writed");
-        }
+        /// <typeparam name="T">type to write</typeparam>
+        /// <param name="processModule">process module</param>
+        /// <param name="value">value</param>
+        /// <param name="offests">address list</param>
+        public void Write<T>(ProcessModule processModule, T value, params int[] offests) => this.Write<T>(this.ConvertLayers(offests, processModule.BaseAddress).ToInt64(), value);
 
         /// <summary>
-        /// Сразу добавляем адрес для записи (поскольку для некоторых оффестов надо получить для начало IntPtr а потом повторно его прочитать уже в другом типе)
+        /// Write to memory
         /// </summary>
-        /// <typeparam name="T">тип, который нужен для записи</typeparam>
-        /// <param name="addresss">адреса</param>
-        /// <param name="lastAddress">последний адрес который надо прочитать</param>
-        /// <param name="value">значение</param>
-        /// <returns></returns>
-        public void Write<T>(ProcessModule module, int[] addresss, int lastAddress, T value)
-            => this.Write<T>(IntPtr.Add(this.Read<IntPtr>(module, addresss, false), lastAddress).ToInt64(), value);
+        /// <typeparam name="T">type to write</typeparam>
+        /// <param name="processModule">process module</param>
+        /// <param name="value">value</param>
+        public void Write<T>(T value, params int[] offests) => this.Write<T>(Core.ProcessData.GetModule(this._process, this._mainModuleName), value, offests);
         #endregion
     }
 }
