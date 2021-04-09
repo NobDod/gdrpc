@@ -136,8 +136,7 @@ namespace GDRPC.Memory
         {
             try
             {
-                IntPtr address = this.ConvertLayers(offests, module.BaseAddress);
-                return this.Read<T>(address.ToInt64());
+                return this.Read<T>(this.ConvertLayers(offests, module.BaseAddress).ToInt64());
             }
             catch
             {
