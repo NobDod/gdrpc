@@ -3,6 +3,7 @@ GDRPC allow you to show additional information about the game on Discord. For ex
 You only call one function or use loader for GDRPC (ldr).
 
 # DONT USE THIS, SUPPORT AND DEVELOPER THIS PROJECT HAS ENDED
+oh.. discord application is working :)
 
 ## Download for original game
 Go to [releases](https://github.com/hopixteam/gdrpc/releases)
